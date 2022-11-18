@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -30,6 +31,30 @@ namespace HeavyTracks
 
         public static MissingCreds? missing_creds;
 
+        public static int MaxWeight
+        {
+            get => max_weight;
+            set
+            {
+                if (value < min_weight)
+                    throw new ArgumentException("max weight must be greater than min weight");
+
+                max_weight = value;
+            }
+        }
+
+        public static int MaxWeight
+        {
+            get => max_weight;
+            set
+            {
+                if (value < min_weight)
+                    throw new ArgumentException("max weight must be greater than min weight");
+
+                max_weight = value;
+            }
+        }
+
         /// <summary>
         /// retrieves the id of the current user.
         /// if the token is missing or expired, this function returns null.
@@ -55,19 +80,17 @@ namespace HeavyTracks
             return m_user_id;
         }
 
-        public static Dictionary<string, Playlist> getPlaylists()
+        public static List<Playlist> getPlaylists()
         {
             var items = getAllItems(HttpMethod.Get, $"users/{getUserId()}/playlists");
-            Dictionary<string, Playlist> playlists = new();
+            List<Playlist> playlists = new();
 
             foreach(var item in items)
             {
                 Playlist playlist = new(item["collaborative"]?.Value<bool>() ?? false, item["public"]?.Value<bool>() ?? false, 
                     item["name"]?.ToString() ?? "INVALID", item["description"]?.ToString() ?? "", item["id"]?.ToString() ?? "");
 
-                fillPlaylist(ref playlist);
-
-                playlists[playlist.id] = playlist;
+                playlists.Add(playlist);
             }
 
             return playlists;
@@ -82,16 +105,33 @@ namespace HeavyTracks
                 var track_item = item["track"];
                 string id = track_item["id"]?.ToString() ?? "";
 
-                if (target.tracks.ContainsKey(id))
-                    target.tracks[id].weight++;
+                var existing_track = target.tracks.Find(item => item.id == id);
+
+                if (existing_track != null)
+                    existing_track.weight++;
                 else
                 {
                     Trace.WriteLine(item);
-                    Track new_track = new(1, track_item["name"]?.ToString(), "NOT YET IMPLEMENTED", track_item["duration_ms"].Value<int>(), id);
-                    target.tracks[id] = new_track;
+                    Track new_track = new(0, track_item["name"]?.ToString() ?? "NOT FOUND", "NOT YET IMPLEMENTED", track_item["duration_ms"]?.Value<int>() ?? -1, id);
+                    target.tracks.Append(new_track);
                 }
 
             }
+
+        }
+
+        public static void createPlaylist(Playlist source, string name, bool overwrite_if_similar)
+        {
+            // start by deleting all of the current contents of the playlist stored on spotify.
+
+            Playlist current_playlist = source.copy();
+
+            fillPlaylist(ref current_playlist);
+
+            int batch = 0;
+
+            while(batch * MAX_URIS < current_playlist.tracks.Count)
+
 
         }
 
@@ -175,8 +215,12 @@ namespace HeavyTracks
         private static readonly Uri API_ENDPOINT = new("https://api.spotify.com/v1/");
         private static readonly uint PORT = 8888;
         private static readonly string SCOPE = "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public";
-        private static readonly int MAX_LIMIT = 2;
+        private static readonly int MAX_LIMIT = 50;
+        private static readonly int MAX_URIS = 100;
         private static readonly int MAX_OFFSET = 100_000;
+
+        private static int max_weight = 5;
+        private static int min_weight = -5;
 
         /// <summary>
         /// constructs a HttpRequestMessage with the specified method.
@@ -290,6 +334,11 @@ namespace HeavyTracks
             id = _id;
         }
 
+        public Track copy()
+        {
+            return new(weight, name, artist, length, id);
+        }
+
         public int weight;
         public string name;
         public string artist;
@@ -308,6 +357,21 @@ namespace HeavyTracks
             id = _id;
         }
 
+        public Playlist copy()
+        {
+            Playlist playlist = new(is_collaborative, is_public, name, description, id);
+
+            return playlist;
+        }
+
+        int trackCount()
+        {
+            int count = 0;
+
+            foreach(Track track in tracks)
+                count += track.weight
+
+        }
 
         public bool is_collaborative;
         public bool is_public;
@@ -315,6 +379,6 @@ namespace HeavyTracks
         public string description;
         public string id;
 
-        public Dictionary<string, Track> tracks = new();
+        public List<Track> tracks = new();
     }
 }
