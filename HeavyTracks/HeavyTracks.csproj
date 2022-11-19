@@ -11,21 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ClosePage.html" />
-    <None Remove="InsertHash.html" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="ClosePage.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="InsertHash.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SpotifyAPI.Web" Version="6.3.0" />
+    <PackageReference Include="SpotifyAPI.Web.Auth" Version="6.3.0" />
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
   </ItemGroup>
 

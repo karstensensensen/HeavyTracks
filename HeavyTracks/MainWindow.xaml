@@ -2,12 +2,15 @@
     x:Class="HeavyTracks.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Views="clr-namespace:HeavyTracks.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:HeavyTracks"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MainWindow"
-    Width="636"
-    Height="419"
+    Width="1280"
+    Height="720"
     mc:Ignorable="d">
-    <Grid Background="#FF272424" />
+    <Grid Background="#FF272424">
+        <Views:EditorView DataContext="{Binding CurrentModel}" />
+    </Grid>
 </Window>

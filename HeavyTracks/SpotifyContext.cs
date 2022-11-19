@@ -43,17 +43,17 @@ namespace HeavyTracks
             }
         }
 
-        public static int MaxWeight
-        {
-            get => max_weight;
-            set
-            {
-                if (value < min_weight)
-                    throw new ArgumentException("max weight must be greater than min weight");
+        //public static int MaxWeight
+        //{
+        //    get => max_weight;
+        //    set
+        //    {
+        //        if (value < min_weight)
+        //            throw new ArgumentException("max weight must be greater than min weight");
 
-                max_weight = value;
-            }
-        }
+        //        max_weight = value;
+        //    }
+        //}
 
         /// <summary>
         /// retrieves the id of the current user.
@@ -130,7 +130,7 @@ namespace HeavyTracks
 
             int batch = 0;
 
-            while(batch * MAX_URIS < current_playlist.tracks.Count)
+            //while(batch * MAX_URIS < current_playlist.tracks.Count)
 
 
         }
@@ -364,14 +364,14 @@ namespace HeavyTracks
             return playlist;
         }
 
-        int trackCount()
-        {
-            int count = 0;
+        //int trackCount()
+        //{
+        //    int count = 0;
 
-            foreach(Track track in tracks)
-                count += track.weight
+        //    //foreach(Track track in tracks)
+        //    //    count += track.weight
 
-        }
+        //}
 
         public bool is_collaborative;
         public bool is_public;
