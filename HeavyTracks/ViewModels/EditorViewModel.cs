@@ -9,12 +9,11 @@ namespace HeavyTracks.ViewModels
 {
     public class EditorViewModel: BaseViewModel
     {
-        EditorModel model;
+        PlaylistWeigher model;
 
-        public EditorViewModel(EditorModel _model)
+        public EditorViewModel(PlaylistWeigher _model)
         {
             model = _model;
-            model.login();
         }
 
     }
