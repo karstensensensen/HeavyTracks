@@ -1,5 +1,7 @@
-﻿using System;
+﻿using HeavyTracks.Models;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +25,11 @@ namespace HeavyTracks.Views
         public EditorView()
         {
             InitializeComponent();
+        }
+
+        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Trace.WriteLine(((Playlist)e.AddedItems[0]!).name);
         }
     }
 }

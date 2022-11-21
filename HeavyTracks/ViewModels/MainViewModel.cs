@@ -9,11 +9,11 @@ namespace HeavyTracks.ViewModels
 {
     public class MainViewModel: BaseViewModel
     {
-        BaseViewModel CurrentModel { get; }
+        public BaseViewModel CurrentModel { get; }
 
-        MainViewModel()
+        public MainViewModel()
         {
-            CurrentModel = new EditorViewModel(new());
+            CurrentModel = new SpotifyWeigherEditorVM(new("85bfa24f31c2414eba026ef1bea0c575"));
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using HeavyTracks.ViewModels;
+﻿using HeavyTracks.Models;
+using HeavyTracks.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -20,7 +21,7 @@ namespace HeavyTracks
 
             MainWindow window = new()
             {
-                DataContext = new EditorViewModel(new())
+                DataContext = new MainViewModel()
             };
 
             window.Show();
