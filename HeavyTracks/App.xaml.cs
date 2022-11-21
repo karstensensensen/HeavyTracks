@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HeavyTracks.Models;
+using HeavyTracks.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -13,12 +15,16 @@ namespace HeavyTracks
     /// </summary>
     public partial class App : Application
     {
-        public App()
+        protected override void OnStartup(StartupEventArgs e)
         {
-            SpotifyContext.initialize("85bfa24f31c2414eba026ef1bea0c575");
-            SpotifyContext.newUserToken();
-            SpotifyContext.getUserId();
-            SpotifyContext.getPlaylists();
+            base.OnStartup(e);
+
+            MainWindow window = new()
+            {
+                DataContext = new MainViewModel()
+            };
+
+            window.Show();
         }
 
     }
