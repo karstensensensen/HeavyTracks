@@ -84,7 +84,6 @@ namespace HeavyTracks.Models
         /// the order of the playlists should match the order of the displayed in Spotify.
         /// 
         /// </summary>
-        /// <returns></returns>
         public List<Playlist> getPlaylists()
         {
             var items = getAllItems(HttpMethod.Get, $"users/{getUserId()}/playlists");
