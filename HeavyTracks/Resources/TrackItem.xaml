@@ -21,29 +21,25 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
             d:Content="1"
+            Content="{Binding TrackNumber}"
             Foreground="{StaticResource TextBrightness.1}" />
         <Label
             Grid.Column="1"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            d:Content="Track Title"
+            Content="Track Title"
             Foreground="{StaticResource TextBrightness.1}" />
         <Label
             Grid.Column="2"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            d:Content="999"
+            Content="999"
             Foreground="{StaticResource TextBrightness.1}" />
-        <svgc:SvgViewbox
-            Grid.Column="4"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Source="/Resources/time-outline.svg" />
         <Label
             Grid.Column="3"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            d:Content="Album Name"
+            Content="Album Name"
             Foreground="{StaticResource TextBrightness.1}" />
         <Button
             Grid.Column="2"
@@ -52,7 +48,6 @@
             Margin="126,0,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
-            Click="Button_Click"
             Content="+">
             <Button.Resources>
                 <Style TargetType="Border">
@@ -67,7 +62,6 @@
             Margin="126,26,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
-            Click="Button_Click"
             Content="-">
             <Button.Resources>
                 <Style TargetType="{x:Type Border}">
@@ -75,5 +69,11 @@
                 </Style>
             </Button.Resources>
         </Button>
+        <Label
+            Grid.Column="4"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Content="4:20"
+            Foreground="{StaticResource TextBrightness.1}" />
     </Grid>
 </UserControl>

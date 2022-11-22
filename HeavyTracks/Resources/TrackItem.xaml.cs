@@ -5,24 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace HeavyTracks.Resources
 {
-    /// <summary>
-    /// Interaction logic for TrackItem.xaml
-    /// </summary>
     public partial class TrackItem : UserControl
     {
         public TrackItem()
         {
             InitializeComponent();
+            DataContext = this;
         }
+
+        public int TrackNumber
+        {
+            get { return (int)GetValue(TrackNumberProperty); }
+            set { SetValue(TrackNumberProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TrackNumber.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TrackNumberProperty =
+            DependencyProperty.Register("TrackNumber", typeof(int), typeof(TrackItem), new PropertyMetadata(-1));
+
+
     }
 }

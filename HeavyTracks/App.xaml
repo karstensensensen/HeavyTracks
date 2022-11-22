@@ -4,8 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:HeavyTracks">
     <Application.Resources>
-        <SolidColorBrush x:Key="TextBrightness.1" Color="#FFCCCCCC" />
-        <SolidColorBrush x:Key="TextBrightness.2" Color="#FFCCCCCC" />
-        <SolidColorBrush x:Key="TextBrightness.3" Color="#FFCCCCCC" />
+        <SolidColorBrush x:Key="TextBrightness.1" Color="#FF5E5E5E" />
+        <SolidColorBrush x:Key="TextBrightness.2" Color="#FFB8B8B8" />
+        <SolidColorBrush x:Key="TextBrightness.3" Color="#FFDDDDDD" />
     </Application.Resources>
 </Application>

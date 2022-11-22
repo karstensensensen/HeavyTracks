@@ -21,7 +21,7 @@ namespace HeavyTracks.ViewModels
         {
             weigher = _weigher;
 
-            weigher.newUserToken();
+            // weigher.newUserToken();
 
             updatePlaylists();
 
