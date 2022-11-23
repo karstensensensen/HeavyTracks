@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:HeavyTracks.Resources"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     d:DesignHeight="44.099"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -23,6 +24,7 @@
             d:Content="1"
             Content="{Binding TrackNumber}"
             Foreground="{StaticResource TextBrightness.1}" />
+        <xctk:IntegerUpDown Name="myUpDownControl" Grid.Column="2" />
         <Label
             Grid.Column="1"
             HorizontalAlignment="Left"

@@ -21,9 +21,13 @@ namespace HeavyTracks.ViewModels
         {
             weigher = _weigher;
 
-            // weigher.newUserToken();
+            weigher.newUserToken();
 
             updatePlaylists();
+
+            weigher.getPlaylistImgUrl(playlists[0]);
+            weigher.getPlaylistImgUrl(playlists[1]);
+            weigher.getPlaylistImgUrl(playlists[4]);
 
             foreach (Playlist playlist in playlists)
             {

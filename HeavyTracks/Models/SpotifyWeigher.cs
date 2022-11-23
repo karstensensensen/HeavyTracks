@@ -99,6 +99,25 @@ namespace HeavyTracks.Models
 
             return playlists;
         }
+        
+        /// <summary>
+        /// 
+        /// retrieve a url pointing to the passed playlists icon image.
+        /// if no image is associated with the playlist, null is returned.
+        /// 
+        /// </summary>
+        public string? getPlaylistImgUrl(Playlist playlist)
+        {
+            var req = spotifyApiReq(HttpMethod.Get, $"playlists/{playlist.id}/images");
+            var res = sendApiReq(req);
+
+            var content = JToken.Parse(res?.Content.ReadAsStringAsync().Result ?? "[]");
+
+            if(content.Count() > 0)
+                return content[0]?["url"]?.ToString();
+            else
+                return null;
+        }
 
         public List<Track> getPlaylistTracks(Playlist target)
         {
@@ -132,6 +151,18 @@ namespace HeavyTracks.Models
                 result.Add(item.Item1);
 
             return result;
+        }
+
+        /// <summary>
+        /// 
+        /// retrieve a url pointing to the passed tracks icon image.
+        /// if no image is associated with the track, null is returned.
+        /// 
+        /// </summary>
+        public string? getTrackImgUrl(Track track)
+        {
+            // TODO: should return the playlist cover image, where the track is from maybe?
+            return null;
         }
 
         /// <summary>

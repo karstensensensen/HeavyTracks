@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="3.8.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="SharpVectors" Version="1.8.1" />
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />

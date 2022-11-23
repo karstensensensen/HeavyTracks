@@ -2,17 +2,38 @@
     x:Class="HeavyTracks.Views.EditorView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:convs="clr-namespace:HeavyTracks.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:HeavyTracks.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:resources="clr-namespace:HeavyTracks.Resources"
     xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
     d:DesignHeight="720"
     d:DesignWidth="1280"
     mc:Ignorable="d">
     <UserControl.Resources>
+        <Thickness
+            x:Key="ItemMargin"
+            Bottom="0"
+            Left="8"
+            Right="8"
+            Top="0" />
+
+        <Thickness
+            x:Key="ListboxItemMargin"
+            Bottom="0"
+            Left="2"
+            Right="2"
+            Top="0" />
+
+        <convs:ListboxMargin x:Key="ListboxMarginConverter" />
+
+        <system:String x:Key="Marg">5</system:String>
+
         <SolidColorBrush x:Key="Item.MouseOver.TextColour" Color="#FFCCCCCC" />
         <SolidColorBrush x:Key="Item.ItemSelected.TextColour" Color="#FFEDEDED" />
+
         <Style
             x:Key="ListBoxItemContainerStyle1"
             BasedOn="{StaticResource {x:Type ListBoxItem}}"
@@ -95,52 +116,6 @@
                 <RowDefinition Height="5" />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="5*" />
-                <ColumnDefinition Width="4*" />
-                <ColumnDefinition Width="5*" />
-                <ColumnDefinition Width="2*" />
-            </Grid.ColumnDefinitions>
-            <Label
-                Width="17"
-                Height="26"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Content="#"
-                Foreground="{StaticResource TextBrightness.1}" />
-            <Label
-                Grid.Column="1"
-                Grid.ColumnSpan="2"
-                Width="33"
-                Height="26"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Content="Title"
-                Foreground="{StaticResource TextBrightness.1}" />
-            <Label
-                Grid.Column="2"
-                Width="48"
-                Height="26"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Content="Weight"
-                Foreground="{StaticResource TextBrightness.1}" />
-            <svgc:SvgViewbox
-                Grid.Column="4"
-                Width="15"
-                Height="14"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Source="/Resources/time-outline.svg" />
-            <Label
-                Grid.Column="3"
-                Width="45"
-                Height="26"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Content="Album"
-                Foreground="{StaticResource TextBrightness.1}" />
             <Separator
                 Grid.Row="1"
                 Grid.ColumnSpan="5"
@@ -148,14 +123,62 @@
                 Margin="5,0,5,0"
                 VerticalAlignment="Center"
                 Background="#FF444444" />
+            <Grid Margin="{StaticResource ItemMargin}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="5*" />
+                    <ColumnDefinition Width="4*" />
+                    <ColumnDefinition Width="5*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <Label
+                    Width="17"
+                    Height="26"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Content="#"
+                    Foreground="{StaticResource TextBrightness.1}" />
+                <Label
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2"
+                    Width="33"
+                    Height="26"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Content="Title"
+                    Foreground="{StaticResource TextBrightness.1}" />
+                <Label
+                    Grid.Column="2"
+                    Width="48"
+                    Height="26"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Content="Weight"
+                    Foreground="{StaticResource TextBrightness.1}" />
+                <svgc:SvgViewbox
+                    Grid.Column="4"
+                    Width="15"
+                    Height="14"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Source="/Resources/time-outline.svg" />
+                <Label
+                    Grid.Column="3"
+                    Width="45"
+                    Height="26"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Content="Album"
+                    Foreground="{StaticResource TextBrightness.1}" />
+            </Grid>
             <ListBox
                 Grid.Row="2"
-                Grid.ColumnSpan="5"
+                Padding="{StaticResource ListboxItemMargin}"
                 HorizontalContentAlignment="Stretch"
-                Background="Transparent"
-                BorderBrush="Transparent">
-
-                <resources:TrackItem TrackNumber="1" />
+                Background="{x:Null}"
+                BorderThickness="0,0,0,0"
+                Foreground="{DynamicResource TextBrightness.2}">
+                <resources:TrackItem />
             </ListBox>
         </Grid>
         <Grid
