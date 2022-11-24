@@ -27,5 +27,54 @@ namespace HeavyTracks.Resources
             DependencyProperty.Register("TrackNumber", typeof(int), typeof(TrackItem), new PropertyMetadata(-1));
 
 
+
+        public string TrackName
+        {
+            get { return (string)GetValue(TrackNameProperty); }
+            set { SetValue(TrackNameProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TrackName.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TrackNameProperty =
+            DependencyProperty.Register("TrackName", typeof(string), typeof(TrackItem), new PropertyMetadata(""));
+
+
+
+
+        public int TrackWeight
+        {
+            get { return (int)GetValue(TrackWeightProperty); }
+            set { SetValue(TrackWeightProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TrackWeight.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TrackWeightProperty =
+            DependencyProperty.Register("TrackWeight", typeof(int), typeof(TrackItem), new PropertyMetadata(0));
+
+
+
+        public string TrackAlbum
+        {
+            get { return (string)GetValue(TrackAlbumProperty); }
+            set { SetValue(TrackAlbumProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TrackAlbum.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TrackAlbumProperty =
+            DependencyProperty.Register("TrackAlbum", typeof(string), typeof(TrackItem), new PropertyMetadata(""));
+
+
+
+        public int TrackDuration
+        {
+            get { return (int)GetValue(TrackDurationProperty); }
+            set { SetValue(TrackDurationProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TrackDuration.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TrackDurationProperty =
+            DependencyProperty.Register("TrackDuration", typeof(int), typeof(TrackItem), new PropertyMetadata(0));
+
+
     }
 }

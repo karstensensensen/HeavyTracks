@@ -1,10 +1,12 @@
-﻿using HeavyTracks.Models;
+﻿using HeavyTracks.Commands;
+using HeavyTracks.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace HeavyTracks.ViewModels
 {
@@ -41,16 +43,31 @@ namespace HeavyTracks.ViewModels
             onPropertyChanged(nameof(playlists));
         }
 
-        public void selectPlaylist(int indx)
-        {
-            active_playlist = playlists[indx];
-            tracks = weigher.getPlaylistTracks(active_playlist);
+        public ICommand SelectPlaylistCmd { get; }
+        
+        public Playlist? ActivePlaylist
+        { 
+            get => active_playlist;
+            set
+            {
+                active_playlist = value;
 
-            onPropertyChanged(nameof(tracks));
-            onPropertyChanged(nameof(active_playlist));
+                if (active_playlist != null)
+                {
+                    tracks = weigher.getPlaylistTracks(active_playlist);
+
+                    onPropertyChanged(nameof(tracks));
+                    onPropertyChanged(nameof(active_playlist));
+                }
+            }
         }
 
+        void selectPlaylistCanExecute(object sender, CanExecuteRoutedEventArgs e) => e.CanExecute = true;
 
+        void selectPlaylistExecute(object sender, ExecutedRoutedEventArgs e)
+        {
+
+        }
 
     }
 }

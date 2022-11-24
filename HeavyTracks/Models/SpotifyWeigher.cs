@@ -130,13 +130,13 @@ namespace HeavyTracks.Models
             foreach (var item in items)
             {
                 var track_item = item["track"];
-                string id = track_item["id"]?.ToString() ?? "";
+                string id = track_item?["id"]?.ToString() ?? "";
 
                 if (unordered_tracks.ContainsKey(id))
                     unordered_tracks[id].Item1.weight++;
                 else
                 {
-                    Track new_track = new(1, track_item["name"]?.ToString() ?? "NOT FOUND", "NOT YET IMPLEMENTED", track_item["duration_ms"]?.Value<int>() ?? -1, track_item["is_local"]?.Value<bool>() ?? false, id, track_item["uri"].ToString() ?? "");
+                    Track new_track = new(1, track_item?["name"]?.ToString() ?? "NOT FOUND", "NOT YET IMPLEMENTED", track_item?["duration_ms"]?.Value<int>() ?? -1, track_item?["is_local"]?.Value<bool>() ?? false, id, track_item?["uri"]?.ToString() ?? "");
                     unordered_tracks[id] = (new_track, i++);
                 }
             }
@@ -230,7 +230,7 @@ namespace HeavyTracks.Models
             if (!response?.IsSuccessStatusCode ?? true)
                 return null;
 
-            var response_content = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+            var response_content = JObject.Parse(response?.Content.ReadAsStringAsync().Result ?? "{}");
 
             Playlist result = new((bool)is_collab, (bool)is_public, name, description, response_content["id"]?.ToString() ?? "");
 
@@ -513,8 +513,6 @@ namespace HeavyTracks.Models
                 msg.Content.Headers.ContentType = new("application/json");
 
                 var response = sendApiReq(msg);
-
-                string c = response.Content.ReadAsStringAsync().Result;
 
                 if (!response?.IsSuccessStatusCode ?? true)
                     return false;

@@ -6,8 +6,10 @@
     xmlns:local="clr-namespace:HeavyTracks.Resources"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+    xmlns:viewmodels="clr-namespace:HeavyTracks.ViewModels"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-    d:DesignHeight="44.099"
+    x:Name="TrackItem_t"
+    d:DesignHeight="44"
     d:DesignWidth="800"
     mc:Ignorable="d">
     <Grid>
@@ -18,64 +20,33 @@
             <ColumnDefinition Width="5*" />
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
+        <local:NumericInput
+            Grid.Column="2"
+            Width="62"
+            HorizontalAlignment="Left"
+            Number="{Binding TrackWeight, ElementName=TrackItem_t}" />
         <Label
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            d:Content="1"
             Content="{Binding TrackNumber}"
             Foreground="{StaticResource TextBrightness.1}" />
-        <xctk:IntegerUpDown Name="myUpDownControl" Grid.Column="2" />
         <Label
             Grid.Column="1"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Content="Track Title"
-            Foreground="{StaticResource TextBrightness.1}" />
-        <Label
-            Grid.Column="2"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="999"
+            Content="{Binding TrackName}"
             Foreground="{StaticResource TextBrightness.1}" />
         <Label
             Grid.Column="3"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Content="Album Name"
+            Content="{Binding TrackAlbum}"
             Foreground="{StaticResource TextBrightness.1}" />
-        <Button
-            Grid.Column="2"
-            Width="18"
-            Height="18"
-            Margin="126,0,0,0"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            Content="+">
-            <Button.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="100" />
-                </Style>
-            </Button.Resources>
-        </Button>
-        <Button
-            Grid.Column="2"
-            Width="18"
-            Height="18"
-            Margin="126,26,0,0"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            Content="-">
-            <Button.Resources>
-                <Style TargetType="{x:Type Border}">
-                    <Setter Property="CornerRadius" Value="100" />
-                </Style>
-            </Button.Resources>
-        </Button>
         <Label
             Grid.Column="4"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Content="4:20"
+            Content="{Binding TrackDuration}"
             Foreground="{StaticResource TextBrightness.1}" />
     </Grid>
 </UserControl>

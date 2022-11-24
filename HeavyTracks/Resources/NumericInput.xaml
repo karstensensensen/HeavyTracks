@@ -5,7 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:HeavyTracks.Resources"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="58.8"
+    xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+    d:DesignHeight="38.3"
     d:DesignWidth="404"
     mc:Ignorable="d">
     <Grid>
@@ -15,24 +16,17 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
-            <ColumnDefinition Width="30" />
         </Grid.ColumnDefinitions>
         <TextBox
             Grid.RowSpan="2"
             VerticalContentAlignment="Center"
             d:Text="1234"
-            FlowDirection="RightToLeft" />
-        <Border
-            Grid.RowSpan="2"
-            BorderBrush="Black"
-            BorderThickness="1" />
-        <Button
-            Grid.Column="1"
-            Click="Button_Click"
-            Content="^" />
-        <Button
-            Grid.Row="1"
-            Grid.Column="1"
-            Content="V" />
+            Background="{x:Null}"
+            BorderBrush="{DynamicResource TextBrightness.1}"
+            CaretBrush="{DynamicResource TextBrightness.3}"
+            FlowDirection="LeftToRight"
+            Foreground="{DynamicResource TextBrightness.3}"
+            Text="{Binding Number}"
+            TextWrapping="NoWrap" />
     </Grid>
 </UserControl>

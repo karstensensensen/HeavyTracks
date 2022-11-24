@@ -11,6 +11,6 @@
     Height="720"
     mc:Ignorable="d">
     <Grid Background="#FF272424">
-        <Views:EditorView DataContext="{Binding CurrentModel}" />
+        <Views:SpotifyWeigherEditor DataContext="{Binding CurrentModel}" />
     </Grid>
 </Window>

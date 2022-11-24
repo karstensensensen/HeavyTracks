@@ -23,6 +23,19 @@ namespace HeavyTracks.Resources
         public NumericInput()
         {
             InitializeComponent();
+            DataContext = this;
         }
+
+        public int Number
+        {
+            get { return (int)GetValue(NumberProperty); }
+            set { SetValue(NumberProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NumberProperty =
+            DependencyProperty.Register("Number", typeof(int), typeof(NumericInput), new PropertyMetadata(0));
+
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using HeavyTracks.Models;
+using HeavyTracks.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,16 +21,16 @@ namespace HeavyTracks.Views
     /// <summary>
     /// Interaction logic for EditorView.xaml
     /// </summary>
-    public partial class EditorView : UserControl
+    public partial class SpotifyWeigherEditor : UserControl
     {
-        public EditorView()
+        public SpotifyWeigherEditor()
         {
             InitializeComponent();
         }
 
-        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ListBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Trace.WriteLine(((Playlist)e.AddedItems[0]!).name);
+            
         }
     }
 }

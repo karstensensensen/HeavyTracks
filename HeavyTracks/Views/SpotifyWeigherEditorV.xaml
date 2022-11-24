@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="HeavyTracks.Views.EditorView"
+    x:Class="HeavyTracks.Views.SpotifyWeigherEditor"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:convs="clr-namespace:HeavyTracks.Converters"
@@ -67,6 +67,7 @@
             </Setter>
         </Style>
     </UserControl.Resources>
+
     <Grid Background="#FF181818" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <Grid.RowDefinitions>
             <RowDefinition Height="75" />
@@ -103,7 +104,7 @@
             Foreground="{DynamicResource TextBrightness.1}"
             ItemContainerStyle="{DynamicResource ListBoxItemContainerStyle1}"
             ItemsSource="{Binding playlists}"
-            SelectionChanged="ListBox_SelectionChanged">
+            SelectedItem="{Binding ActivePlaylist}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Margin="5,5,0,5" Text="{Binding name}" />
@@ -177,8 +178,19 @@
                 HorizontalContentAlignment="Stretch"
                 Background="{x:Null}"
                 BorderThickness="0,0,0,0"
-                Foreground="{DynamicResource TextBrightness.2}">
-                <resources:TrackItem />
+                Foreground="{DynamicResource TextBrightness.2}"
+                ItemsSource="{Binding tracks}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <resources:TrackItem
+                            TrackAlbum="{Binding name}"
+                            TrackDuration="{Binding length}"
+                            TrackName="{Binding name}"
+                            TrackNumber="2"
+                            TrackWeight="{Binding weight}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+
             </ListBox>
         </Grid>
         <Grid
