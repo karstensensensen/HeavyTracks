@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace HeavyTracks.Resources
 {
     /// <summary>
-    /// Interaction logic for MyButton.xaml
+    /// Interaction logic for NumericInput.xaml
     /// </summary>
-    public partial class MyButton : UserControl
+    public partial class NumericInput : UserControl
     {
-        public MyButton()
+        public NumericInput()
         {
             InitializeComponent();
         }
