@@ -13,8 +13,10 @@ namespace HeavyTracks.Resources
         public TrackItem()
         {
             InitializeComponent();
-            DataContext = this;
+            Data = this;
         }
+
+        public TrackItem Data { get; }
 
         public int TrackNumber
         {
