@@ -173,6 +173,7 @@
                     Foreground="{StaticResource TextBrightness.1}" />
             </Grid>
             <ListBox
+                x:Name="Item"
                 Grid.Row="2"
                 Padding="{StaticResource ListboxItemMargin}"
                 HorizontalContentAlignment="Stretch"
@@ -184,10 +185,10 @@
                     <DataTemplate>
                         <resources:TrackItem
                             TrackAlbum="{Binding name}"
-                            TrackDuration="{Binding length}"
-                            TrackName="{Binding name}"
+                            TrackDuration="{Binding length, RelativeSource={RelativeSource AncestorType={x:Type Track}, Mode=FindAncestor}}"
+                            TrackName="{Binding name, RelativeSource={RelativeSource AncestorType={x:Type Track}, Mode=FindAncestor}}"
                             TrackNumber="2"
-                            TrackWeight="{Binding weight}" />
+                            TrackWeight="{Binding weight, RelativeSource={RelativeSource AncestorType={x:Type Track}, Mode=FindAncestor}}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
 

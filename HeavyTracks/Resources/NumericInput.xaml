@@ -9,7 +9,7 @@
     d:DesignHeight="38.3"
     d:DesignWidth="404"
     mc:Ignorable="d">
-    <Grid>
+    <Grid DataContext="{Binding Data}">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />

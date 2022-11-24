@@ -12,41 +12,45 @@
     d:DesignHeight="44"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition Width="5*" />
-            <ColumnDefinition Width="4*" />
-            <ColumnDefinition Width="5*" />
-            <ColumnDefinition Width="2*" />
-        </Grid.ColumnDefinitions>
-        <local:NumericInput
-            Grid.Column="2"
-            Width="62"
-            HorizontalAlignment="Left"
-            Number="{Binding TrackWeight, ElementName=TrackItem_t}" />
-        <Label
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="{Binding TrackNumber}"
-            Foreground="{StaticResource TextBrightness.1}" />
-        <Label
-            Grid.Column="1"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="{Binding TrackName}"
-            Foreground="{StaticResource TextBrightness.1}" />
-        <Label
-            Grid.Column="3"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="{Binding TrackAlbum}"
-            Foreground="{StaticResource TextBrightness.1}" />
-        <Label
-            Grid.Column="4"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="{Binding TrackDuration}"
-            Foreground="{StaticResource TextBrightness.1}" />
-    </Grid>
+    <UserControl.Template>
+        <ControlTemplate TargetType="UserControl">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="5*" />
+                    <ColumnDefinition Width="4*" />
+                    <ColumnDefinition Width="5*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <local:NumericInput
+                    Grid.Column="2"
+                    Width="62"
+                    HorizontalAlignment="Left"
+                    Number="{TemplateBinding TrackWeight}" />
+                <Label
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Content="{TemplateBinding TrackNumber}"
+                    Foreground="{StaticResource TextBrightness.1}" />
+                <Label
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Content="{TemplateBinding TrackName}"
+                    Foreground="{StaticResource TextBrightness.1}" />
+                <Label
+                    Grid.Column="3"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Content="{TemplateBinding TrackAlbum}"
+                    Foreground="{StaticResource TextBrightness.1}" />
+                <Label
+                    Grid.Column="4"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Content="{TemplateBinding TrackDuration}"
+                    Foreground="{StaticResource TextBrightness.1}" />
+            </Grid>
+        </ControlTemplate>
+    </UserControl.Template>
 </UserControl>
