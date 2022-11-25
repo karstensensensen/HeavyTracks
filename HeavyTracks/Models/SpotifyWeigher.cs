@@ -136,7 +136,7 @@ namespace HeavyTracks.Models
                     unordered_tracks[id].Item1.weight++;
                 else
                 {
-                    Track new_track = new(1, track_item?["name"]?.ToString() ?? "NOT FOUND", "NOT YET IMPLEMENTED", track_item?["duration_ms"]?.Value<int>() ?? -1, track_item?["is_local"]?.Value<bool>() ?? false, id, track_item?["uri"]?.ToString() ?? "");
+                    Track new_track = new(1, track_item?["name"]?.ToString() ?? "NOT FOUND", track_item?["album"]?["name"]?.ToString() ?? "NOT FOUND", "NOT YET IMPLEMENTED", track_item?["duration_ms"]?.Value<int>() ?? -1, track_item?["is_local"]?.Value<bool>() ?? false, id, track_item?["uri"]?.ToString() ?? "");
                     unordered_tracks[id] = (new_track, i++);
                 }
             }
@@ -526,10 +526,11 @@ namespace HeavyTracks.Models
 
     public class Track
     {
-        public Track(int _weight, string _name, string _artist, int _length, bool _is_local, string _id, string _uri)
+        public Track(int _weight, string _name, string _album, string _artist, int _length, bool _is_local, string _id, string _uri)
         {
             weight = _weight;
             name = _name;
+            album = _album;
             artist = _artist;
             length = _length;
             is_local = _is_local;
@@ -539,12 +540,13 @@ namespace HeavyTracks.Models
 
         public Track copy()
         {
-            return new(weight, name, artist, length, is_local, id, uri);
+            return new(weight, name, album, artist, length, is_local, id, uri);
         }
 
         public bool is_local { get; set; }
         public int weight { get; set; }
         public string name { get; set; }
+        public string album { get; set; }
         public string artist { get; set; }
         public string id { get; set; }
         public string uri { get; set; }

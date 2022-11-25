@@ -6,10 +6,11 @@
     xmlns:local="clr-namespace:HeavyTracks.Resources"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+    x:Name="self"
     d:DesignHeight="38.3"
     d:DesignWidth="404"
     mc:Ignorable="d">
-    <Grid DataContext="{Binding Data}">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
@@ -26,7 +27,7 @@
             CaretBrush="{DynamicResource TextBrightness.3}"
             FlowDirection="LeftToRight"
             Foreground="{DynamicResource TextBrightness.3}"
-            Text="{Binding Number}"
+            Text="{Binding Number, ElementName=self}"
             TextWrapping="NoWrap" />
     </Grid>
 </UserControl>

@@ -23,10 +23,8 @@ namespace HeavyTracks.Resources
         public NumericInput()
         {
             InitializeComponent();
-            Data = this;
         }
 
-        public NumericInput Data { get; }
         public int Number
         {
             get { return (int)GetValue(NumberProperty); }

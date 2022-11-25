@@ -70,7 +70,7 @@
 
     <Grid Background="#FF181818" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <Grid.RowDefinitions>
-            <RowDefinition Height="75" />
+            <RowDefinition Height="100" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -104,6 +104,8 @@
             Foreground="{DynamicResource TextBrightness.1}"
             ItemContainerStyle="{DynamicResource ListBoxItemContainerStyle1}"
             ItemsSource="{Binding playlists}"
+            ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
             SelectedItem="{Binding ActivePlaylist}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -184,11 +186,11 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <resources:TrackItem
-                            TrackAlbum="{Binding name}"
-                            TrackDuration="{Binding length, RelativeSource={RelativeSource AncestorType={x:Type Track}, Mode=FindAncestor}}"
-                            TrackName="{Binding name, RelativeSource={RelativeSource AncestorType={x:Type Track}, Mode=FindAncestor}}"
+                            TrackAlbum="{Binding album}"
+                            TrackDuration="{Binding length}"
+                            TrackName="{Binding name}"
                             TrackNumber="2"
-                            TrackWeight="{Binding weight, RelativeSource={RelativeSource AncestorType={x:Type Track}, Mode=FindAncestor}}" />
+                            TrackWeight="{Binding weight}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
 
@@ -203,15 +205,15 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="7*" />
+                <ColumnDefinition Width="10*" />
                 <ColumnDefinition Width="83*" />
             </Grid.ColumnDefinitions>
-            <Image Grid.RowSpan="2" />
+            <Image Grid.RowSpan="2" Source="{Binding PlaylistIcon}" />
             <Label
                 Grid.Column="1"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
-                Content="TITLE"
+                Content="{Binding PlaylistName}"
                 FontSize="20"
                 FontWeight="Bold"
                 Foreground="{DynamicResource TextBrightness.3}" />

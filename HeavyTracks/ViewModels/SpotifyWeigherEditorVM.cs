@@ -15,6 +15,8 @@ namespace HeavyTracks.ViewModels
         public SpotifyWeigher weigher;
 
         public List<Playlist> playlists { get; set; } = new();
+        public string PlaylistName { get; set; } = "NOT SELECTED";
+        public string PlaylistIcon { get; set; } = "";
 
         public Playlist? active_playlist;
         public List<Track>? tracks { get; set; }
@@ -26,10 +28,6 @@ namespace HeavyTracks.ViewModels
             weigher.newUserToken();
 
             updatePlaylists();
-
-            weigher.getPlaylistImgUrl(playlists[0]);
-            weigher.getPlaylistImgUrl(playlists[1]);
-            weigher.getPlaylistImgUrl(playlists[4]);
 
             foreach (Playlist playlist in playlists)
             {
@@ -56,8 +54,14 @@ namespace HeavyTracks.ViewModels
                 {
                     tracks = weigher.getPlaylistTracks(active_playlist);
 
+                    PlaylistName = active_playlist?.name ?? "PLAYLIST";
+                    
                     onPropertyChanged(nameof(tracks));
                     onPropertyChanged(nameof(active_playlist));
+                    onPropertyChanged(nameof(PlaylistName));
+
+                    PlaylistIcon = weigher.getPlaylistImgUrl(active_playlist) ?? "";
+                    onPropertyChanged(nameof(PlaylistIcon));
                 }
             }
         }

@@ -8,11 +8,11 @@
     xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
     xmlns:viewmodels="clr-namespace:HeavyTracks.ViewModels"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-    x:Name="TrackItem_t"
+    x:Name="self"
     d:DesignHeight="44"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <Grid DataContext="{Binding Data}">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition Width="5*" />
@@ -24,29 +24,29 @@
             Grid.Column="2"
             Width="62"
             HorizontalAlignment="Left"
-            Number="{Binding TrackWeight}" />
+            Number="{Binding TrackWeight, ElementName=self}" />
         <Label
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Content="{Binding TrackNumber}"
+            Content="{Binding TrackNumber, ElementName=self}"
             Foreground="{StaticResource TextBrightness.1}" />
         <Label
             Grid.Column="1"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Content="{Binding TrackName}"
+            Content="{Binding TrackName, ElementName=self}"
             Foreground="{StaticResource TextBrightness.1}" />
         <Label
             Grid.Column="3"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Content="{Binding TrackAlbum}"
+            Content="{Binding TrackAlbum, ElementName=self}"
             Foreground="{StaticResource TextBrightness.1}" />
         <Label
             Grid.Column="4"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Content="{TemplateBinding TrackDuration}"
+            Content="{Binding TrackDuration, ElementName=self}"
             Foreground="{StaticResource TextBrightness.1}" />
     </Grid>
 </UserControl>
