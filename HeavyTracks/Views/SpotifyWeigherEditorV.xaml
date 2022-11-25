@@ -31,9 +31,6 @@
 
         <system:String x:Key="Marg">5</system:String>
 
-        <SolidColorBrush x:Key="Item.MouseOver.TextColour" Color="#FFCCCCCC" />
-        <SolidColorBrush x:Key="Item.ItemSelected.TextColour" Color="#FFEDEDED" />
-
         <Style
             x:Key="ListBoxItemContainerStyle1"
             BasedOn="{StaticResource {x:Type ListBoxItem}}"
@@ -55,7 +52,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource TextBrightness.1}" />
+                                <Setter Property="Foreground" Value="{StaticResource TextBrightness.2}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Foreground" Value="{StaticResource TextBrightness.2}" />
@@ -68,162 +65,171 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="#FF181818" ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="100" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="220" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Separator
-            Grid.Row="1"
-            Height="1"
-            Margin="2,0,2,0"
-            VerticalAlignment="Top"
-            Background="#FF444444" />
-        <Button
-            Width="116"
-            Height="38"
-            Margin="0,9,0,0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top">
-            <Button.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="20" />
-                </Style>
-            </Button.Resources>
-        </Button>
-        <ListBox
-            Grid.Row="1"
-            d:ItemsSource="{d:SampleData ItemCount=50}"
-            Background="{x:Null}"
-            BorderBrush="{x:Null}"
-            FontSize="15"
-            Foreground="{DynamicResource TextBrightness.1}"
-            ItemContainerStyle="{DynamicResource ListBoxItemContainerStyle1}"
-            ItemsSource="{Binding playlists}"
-            ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-            ScrollViewer.VerticalScrollBarVisibility="Auto"
-            SelectedItem="{Binding ActivePlaylist}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Margin="5,5,0,5" Text="{Binding name}" />
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <Grid Grid.Row="1" Grid.Column="1">
+
+        <Grid Background="#FF181818" ScrollViewer.VerticalScrollBarVisibility="Disabled">
             <Grid.RowDefinitions>
-                <RowDefinition Height="20" />
-                <RowDefinition Height="5" />
+                <RowDefinition Height="100" />
                 <RowDefinition />
             </Grid.RowDefinitions>
             <Separator
                 Grid.Row="1"
-                Grid.ColumnSpan="5"
-                Height="2"
-                Margin="5,0,5,0"
-                VerticalAlignment="Center"
+                Height="1"
+                Margin="2,0,2,0"
+                VerticalAlignment="Top"
                 Background="#FF444444" />
-            <Grid Margin="{StaticResource ItemMargin}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="5*" />
-                    <ColumnDefinition Width="4*" />
-                    <ColumnDefinition Width="5*" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-                <Label
-                    Width="17"
-                    Height="26"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Content="#"
-                    Foreground="{StaticResource TextBrightness.1}" />
-                <Label
-                    Grid.Column="1"
-                    Grid.ColumnSpan="2"
-                    Width="33"
-                    Height="26"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Content="Title"
-                    Foreground="{StaticResource TextBrightness.1}" />
-                <Label
-                    Grid.Column="2"
-                    Width="48"
-                    Height="26"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Content="Weight"
-                    Foreground="{StaticResource TextBrightness.1}" />
-                <svgc:SvgViewbox
-                    Grid.Column="4"
-                    Width="15"
-                    Height="14"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Source="/Resources/time-outline.svg" />
-                <Label
-                    Grid.Column="3"
-                    Width="45"
-                    Height="26"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Content="Album"
-                    Foreground="{StaticResource TextBrightness.1}" />
-            </Grid>
+            <Button
+                Width="116"
+                Height="38"
+                Margin="0,9,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="20" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <ListBox
-                x:Name="Item"
-                Grid.Row="2"
-                Padding="{StaticResource ListboxItemMargin}"
-                HorizontalContentAlignment="Stretch"
+                Grid.Row="1"
+                d:ItemsSource="{d:SampleData ItemCount=50}"
                 Background="{x:Null}"
-                BorderThickness="0,0,0,0"
-                Foreground="{DynamicResource TextBrightness.2}"
-                ItemsSource="{Binding tracks}">
+                BorderBrush="{x:Null}"
+                FontSize="15"
+                Foreground="{DynamicResource TextBrightness.1}"
+                ItemContainerStyle="{DynamicResource ListBoxItemContainerStyle1}"
+                ItemsSource="{Binding playlists}"
+                ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                SelectedItem="{Binding ActivePlaylist}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <resources:TrackItem
-                            TrackAlbum="{Binding album}"
-                            TrackDuration="{Binding length}"
-                            TrackName="{Binding name}"
-                            TrackNumber="2"
-                            TrackWeight="{Binding weight}" />
+                        <TextBlock Margin="5,5,0,5" Text="{Binding name}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
-
             </ListBox>
         </Grid>
         <Grid
             Grid.Column="1"
-            Margin="0,5,0,5"
-            Background="{DynamicResource TextBrightness.2}">
+            Background="#FF181818"
+            ScrollViewer.VerticalScrollBarVisibility="Disabled">
             <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
+                <RowDefinition Height="109*" />
+                <RowDefinition Height="611*" />
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="10*" />
-                <ColumnDefinition Width="83*" />
-            </Grid.ColumnDefinitions>
-            <Image Grid.RowSpan="2" Source="{Binding PlaylistIcon}" />
-            <Label
-                Grid.Column="1"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                Content="{Binding PlaylistName}"
-                FontSize="20"
-                FontWeight="Bold"
-                Foreground="{DynamicResource TextBrightness.3}" />
-            <Label
-                Grid.Row="1"
-                Grid.Column="1"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Content="Sub Text"
-                Foreground="{DynamicResource TextBrightness.1}" />
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Separator
+                    Grid.Row="1"
+                    Grid.ColumnSpan="5"
+                    Height="2"
+                    Margin="5,0,5,0"
+                    VerticalAlignment="Center"
+                    Background="#FF444444" />
+                <Grid Margin="{StaticResource ItemMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="5*" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="5*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <Label
+                        Width="17"
+                        Height="26"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Content="#"
+                        Foreground="{StaticResource TextBrightness.1}" />
+                    <Label
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        Width="33"
+                        Height="26"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Content="Title"
+                        Foreground="{StaticResource TextBrightness.1}" />
+                    <Label
+                        Grid.Column="2"
+                        Width="48"
+                        Height="26"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Content="Weight"
+                        Foreground="{StaticResource TextBrightness.1}" />
+                    <svgc:SvgViewbox
+                        Grid.Column="4"
+                        Width="15"
+                        Height="14"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Source="/Resources/time-outline.svg" />
+                    <Label
+                        Grid.Column="3"
+                        Width="45"
+                        Height="26"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Content="Album"
+                        Foreground="{StaticResource TextBrightness.1}" />
+                </Grid>
+                <ListBox
+                    x:Name="Item"
+                    Grid.Row="2"
+                    Padding="{StaticResource ListboxItemMargin}"
+                    HorizontalContentAlignment="Stretch"
+                    Background="{x:Null}"
+                    BorderThickness="0,0,0,0"
+                    Foreground="{DynamicResource TextBrightness.2}"
+                    ItemsSource="{Binding tracks}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <resources:TrackItem
+                                TrackAlbum="{Binding album}"
+                                TrackDuration="{Binding length}"
+                                TrackName="{Binding name}"
+                                TrackNumber="2"
+                                TrackWeight="{Binding weight}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+            </Grid>
+            <Grid Margin="0,5,0,5" Background="{DynamicResource TextBrightness.2}">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Image Grid.RowSpan="2" Source="{Binding PlaylistIcon}" />
+                <Label
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Content="{Binding PlaylistName}"
+                    FontSize="20"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource TextBrightness.3}" />
+                <Label
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Content="Sub Text"
+                    Foreground="{DynamicResource TextBrightness.1}" />
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>
