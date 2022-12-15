@@ -1,0 +1,76 @@
+<Window
+    x:Class="HeavyTracks.Views.HeavyTracksWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+    xmlns:vm="using:HeavyTracks.ViewModels"
+    Title="HeavyTracks"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    Icon="/Assets/avalonia-logo.ico"
+    mc:Ignorable="d">
+
+    <Design.DataContext>
+        <vm:HeavyTracksVM />
+    </Design.DataContext>
+
+    <Window.Resources>
+
+        <system:Boolean x:Key="gridlines">True</system:Boolean>
+
+    </Window.Resources>
+
+    <Grid Background="#303030" ShowGridLines="{StaticResource gridlines}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <!--  Playlist + User section  -->
+
+        <Grid ShowGridLines="{StaticResource gridlines}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <!--  Active user section  -->
+
+            <Button
+                Margin="10"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center" />
+
+            <ListBox
+                Grid.Row="1"
+                Margin="10"
+                Background="Transparent"
+                Items="{Binding Playlists}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBox Text="{Binding Name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+
+        </Grid>
+
+        <!--  Playlist tracks section  -->
+
+        <Grid Grid.Column="1" ShowGridLines="{StaticResource gridlines}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80" />
+                <RowDefinition />
+                <RowDefinition Height="50" />
+            </Grid.RowDefinitions>
+
+        </Grid>
+
+    </Grid>
+
+</Window>
