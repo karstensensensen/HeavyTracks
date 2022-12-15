@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,8 +20,10 @@ namespace HeavyTracks.Resources
     /// <summary>
     /// Interaction logic for NumericInput.xaml
     /// </summary>
-    public partial class NumericInput : UserControl
+    public partial class NumericInput : UserControl, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public NumericInput()
         {
             InitializeComponent();
@@ -28,7 +32,7 @@ namespace HeavyTracks.Resources
         public int Number
         {
             get { return (int)GetValue(NumberProperty); }
-            set { SetValue(NumberProperty, value); }
+            set { SetValue(NumberProperty, value); PropertyChanged?.Invoke(this, new("Number")); }
         }
 
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...

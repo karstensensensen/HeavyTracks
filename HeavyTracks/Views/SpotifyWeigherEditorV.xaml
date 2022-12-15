@@ -96,7 +96,7 @@
             </Button>
             <ListBox
                 Grid.Row="1"
-                d:ItemsSource="{d:SampleData ItemCount=50}"
+                d:ItemsSource="{d:SampleData ItemCount=10}"
                 Background="{x:Null}"
                 BorderBrush="{x:Null}"
                 FontSize="15"
@@ -126,15 +126,15 @@
                     <RowDefinition Height="20" />
                     <RowDefinition Height="5" />
                     <RowDefinition />
+                    <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
                 <Separator
                     Grid.Row="1"
-                    Grid.ColumnSpan="5"
                     Height="2"
                     Margin="5,0,5,0"
                     VerticalAlignment="Center"
                     Background="#FF444444" />
-                <Grid Margin="{StaticResource ItemMargin}">
+                <Grid Margin="8,0,8,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="5*" />
@@ -183,7 +183,7 @@
                         Foreground="{StaticResource TextBrightness.1}" />
                 </Grid>
                 <ListBox
-                    x:Name="Item"
+                    x:Name="Items"
                     Grid.Row="2"
                     Padding="{StaticResource ListboxItemMargin}"
                     HorizontalContentAlignment="Stretch"
@@ -197,12 +197,22 @@
                                 TrackAlbum="{Binding album}"
                                 TrackDuration="{Binding length}"
                                 TrackName="{Binding name}"
-                                TrackNumber="2"
-                                TrackWeight="{Binding weight}" />
+                                TrackNumber="{Binding number}"
+                                TrackWeight="{Binding weight, UpdateSourceTrigger=PropertyChanged}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
-
                 </ListBox>
+                <StackPanel
+                    Grid.Row="3"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+                    <Button Width="80" Content="Apply As" />
+                    <Button
+                        Width="80"
+                        Command="{Binding ApplyCmd}"
+                        Content="Apply" />
+                    <Button Width="80" Content="Cancel" />
+                </StackPanel>
             </Grid>
             <Grid Margin="0,5,0,5" Background="{DynamicResource TextBrightness.2}">
                 <Grid.RowDefinitions>

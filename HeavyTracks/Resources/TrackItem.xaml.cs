@@ -13,7 +13,6 @@ namespace HeavyTracks.Resources
         public TrackItem()
         {
             InitializeComponent();
-            Data = this;
         }
 
         public TrackItem Data { get; }
@@ -79,4 +78,5 @@ namespace HeavyTracks.Resources
 
 
     }
+    
 }

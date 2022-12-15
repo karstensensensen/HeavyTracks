@@ -7,12 +7,12 @@ using System.Windows.Input;
 
 namespace HeavyTracks.Commands
 {
-    class RealyCmd<T> : ICommand
+    public class RelayCmd<T> : ICommand
     {
 
         public event EventHandler? CanExecuteChanged;
 
-        public RealyCmd(Action<T?> executed, Predicate<T?>? can_execute = null)
+        public RelayCmd(Action<T?> executed, Predicate<T?>? can_execute = null)
         {
             m_executed = executed;
             m_can_execute = can_execute;

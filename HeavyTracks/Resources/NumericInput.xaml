@@ -11,15 +11,10 @@
     d:DesignWidth="404"
     mc:Ignorable="d">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <TextBox
-            Grid.RowSpan="2"
             VerticalContentAlignment="Center"
             d:Text="1234"
             Background="{x:Null}"
@@ -27,7 +22,7 @@
             CaretBrush="{DynamicResource TextBrightness.3}"
             FlowDirection="LeftToRight"
             Foreground="{DynamicResource TextBrightness.3}"
-            Text="{Binding Number, ElementName=self}"
+            Text="{Binding Number, ElementName=self, UpdateSourceTrigger=PropertyChanged}"
             TextWrapping="NoWrap" />
     </Grid>
 </UserControl>

@@ -21,8 +21,12 @@ namespace HeavyTracks.ViewModels
         public Playlist? active_playlist;
         public List<Track>? tracks { get; set; }
 
+        public RelayCmd<object> ApplyCmd { get; set; }
+
         public SpotifyWeigherEditorVM(SpotifyWeigher _weigher)
         {
+            ApplyCmd = new(x => pushChanges(true));
+
             weigher = _weigher;
 
             weigher.newUserToken();
@@ -64,6 +68,13 @@ namespace HeavyTracks.ViewModels
                     onPropertyChanged(nameof(PlaylistIcon));
                 }
             }
+        }
+
+        public void pushChanges(bool overwrite)
+        {
+            if(overwrite)
+                weigher.pushTracks(tracks!, active_playlist!, true);
+            
         }
 
         void selectPlaylistCanExecute(object sender, CanExecuteRoutedEventArgs e) => e.CanExecute = true;
