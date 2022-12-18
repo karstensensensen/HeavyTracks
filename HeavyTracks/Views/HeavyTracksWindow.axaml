@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:m="using:HeavyTracks.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:vm="using:HeavyTracks.ViewModels"
@@ -22,7 +23,7 @@
 
     </Window.Resources>
 
-    <Grid Background="#303030" ShowGridLines="{StaticResource gridlines}">
+    <Grid ShowGridLines="{StaticResource gridlines}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />
             <ColumnDefinition />
@@ -38,6 +39,10 @@
 
             <!--  Active user section  -->
 
+
+            <m:Bike x:Key="bike" Wheels="20" />
+
+
             <Button
                 Margin="10"
                 HorizontalAlignment="Stretch"
@@ -52,7 +57,7 @@
                 Items="{Binding Playlists}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBox Text="{Binding Name}" />
+                        <TextBlock Text="{Binding name}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

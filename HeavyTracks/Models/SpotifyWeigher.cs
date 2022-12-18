@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -13,9 +14,30 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace HeavyTracks.Models
 {
+    public static class TomlynExtension
+    {
+        public static T get<T>(this TomlTable table, string key)
+        {
+            return (T)table[key];
+        }
+
+        public static TomlTable get(this TomlTable table, string key)
+        {
+            return get<TomlTable>(table, key);
+        }
+
+
+        //public static T set<T>(this TomlTable table, string key, T new_value)
+        //{
+        //    table[key] = new_value;
+        //}
+    }
+
     /// <summary>
     /// handles any interfacing with the Spotify WEB API.
     /// </summary>
@@ -328,7 +350,7 @@ namespace HeavyTracks.Models
                     res.StatusCode = 200;
                     res.ContentType = "text/html";
 
-                    var content = File.ReadAllBytes("InsertHash.html");
+                    var content = File.ReadAllBytes("Assets/InsertHash.html");
 
                     res.OutputStream.Write(content, 0, content.Count());
                     res.Close();
@@ -341,7 +363,7 @@ namespace HeavyTracks.Models
                     res.ContentType = "text/html";
 
                     // html file, that auto closes the tab, is sent as a response.
-                    var content = File.ReadAllBytes("ClosePage.html");
+                    var content = File.ReadAllBytes("Assets/ClosePage.html");
 
                     res.OutputStream.Write(content, 0, content.Count());
                     res.Close();
@@ -350,6 +372,29 @@ namespace HeavyTracks.Models
                 }
             }
         }
+
+
+        public void cacheUserToken(string cache_file)
+        {
+            TomlTable new_cache;
+
+            if (File.Exists(cache_file))
+                new_cache = Toml.ToModel(File.ReadAllText(cache_file));
+            else
+                new_cache = new();
+
+            //new_cache.get("credentials").set;
+        }
+
+        public void cacheCliendId(string cache_file) { }
+
+        /// <summary>
+        /// attempts to load a cache file into memory.
+        /// fails if file does not exists, or the cache file contains outdated values.
+        /// </summary>
+        /// <param name="cache_file"></param>
+        /// <returns> true if load was succesfull, false if something went wrong. </returns>
+        public bool loadCache(string cache_file) { return false; }
 
         private string m_client_id = "";
         private string? m_user_token;
@@ -476,7 +521,7 @@ namespace HeavyTracks.Models
         /// <param name="endpoint"> endpoint to send the request to </param>
         /// <param name="property_name"> the name of the property that will contain the array of values </param>
         /// <param name="values"> the list of values that should be passed to the endpoint </param>
-        /// <param name="body"> (optional) the rest of the body that should be passed to the endpoint, should not contain [property name] </param>
+        /// <param name="body"> (optional) the rest of the body that should be passed to the endpoint, should not contain [property_name] </param>
         /// <param name="query"> (optional) additional query parameters to be passed to the endpoint </param>
         private bool sendAllItems(HttpMethod method, string endpoint, string property_name, List<JToken> values, JObject? body = null, string query = "")
         {
