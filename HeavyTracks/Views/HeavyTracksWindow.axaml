@@ -8,8 +8,8 @@
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     xmlns:vm="using:HeavyTracks.ViewModels"
     Title="HeavyTracks"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    Width="1280"
+    Height="720"
     Icon="/Assets/avalonia-logo.ico"
     mc:Ignorable="d">
 
@@ -23,25 +23,13 @@
 
     </Window.Resources>
 
-    <Grid ShowGridLines="{StaticResource gridlines}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+    <Grid ColumnDefinitions="200,1*" ShowGridLines="{StaticResource gridlines}">
 
         <!--  Playlist + User section  -->
 
-        <Grid ShowGridLines="{StaticResource gridlines}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="80" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
+        <Grid RowDefinitions="65,1*" ShowGridLines="{StaticResource gridlines}">
 
             <!--  Active user section  -->
-
-
-            <m:Bike x:Key="bike" Wheels="20" />
-
 
             <Button
                 Margin="10"
@@ -54,7 +42,9 @@
                 Grid.Row="1"
                 Margin="10"
                 Background="Transparent"
-                Items="{Binding Playlists}">
+                Items="{Binding Playlists}"
+                SelectedItem="{Binding SelectedPlaylist}"
+                SelectionMode="Single,AlwaysSelected">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding name}" />
@@ -62,17 +52,78 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-
         </Grid>
 
         <!--  Playlist tracks section  -->
 
-        <Grid Grid.Column="1" ShowGridLines="{StaticResource gridlines}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="80" />
-                <RowDefinition />
-                <RowDefinition Height="50" />
-            </Grid.RowDefinitions>
+        <Grid
+            Grid.Column="1"
+            RowDefinitions="65,1*,50"
+            ShowGridLines="{StaticResource gridlines}">
+
+            <!--  Active playlist info section  -->
+
+            <Border Background="#303030">
+                <TextBlock
+                    Grid.Row="0"
+                    Margin="10"
+                    VerticalAlignment="Center"
+                    FontSize="25"
+                    Text="{Binding SelectedPlaylist.name}" />
+            </Border>
+
+            <!--  Playlist tracks section  -->
+
+            <DataGrid Grid.Row="1" Items="{Binding SelectedPlaylistTracks}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Width="60"
+                        Binding="{Binding number}"
+                        Header="#"
+                        IsReadOnly="True" />
+                    <DataGridTextColumn
+                        Width="4*"
+                        Binding="{Binding name}"
+                        Header="Title"
+                        IsReadOnly="True" />
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding weight}"
+                        Header="Weight"
+                        IsReadOnly="True" />
+                    <DataGridTextColumn
+                        Width="4*"
+                        Binding="{Binding album}"
+                        Header="Album"
+                        IsReadOnly="True" />
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding length_str}"
+                        Header="Duration"
+                        IsReadOnly="True" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!--<DataGrid Grid.Row="1"
+                Name="This is a datagrid"
+                AutoGenerateColumns="False"
+                Items="{Binding SelectedPlaylistTracks}">
+                <DataGridTextColumn Binding="{Binding name}" Header="Title" />
+            </DataGrid>-->
+
+            <!--<ListBox
+                Grid.Row="1"
+                Background="Transparent"
+                Items="{Binding SelectedPlaylistTracks}"
+                SelectionMode="Multiple">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+			
+
+            </ListBox>-->
 
         </Grid>
 

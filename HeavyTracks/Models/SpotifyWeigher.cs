@@ -21,21 +21,13 @@ namespace HeavyTracks.Models
 {
     public static class TomlynExtension
     {
-        public static T get<T>(this TomlTable table, string key)
-        {
-            return (T)table[key];
-        }
+        public static T get<T>(this TomlTable table, string key) => (T)table[key];
 
-        public static TomlTable get(this TomlTable table, string key)
-        {
-            return get<TomlTable>(table, key);
-        }
+        public static TomlTable get(this TomlTable table, string key) => get<TomlTable>(table, key);
 
-
-        //public static T set<T>(this TomlTable table, string key, T new_value)
-        //{
-        //    table[key] = new_value;
-        //}
+        public static void set<T>(this TomlTable table, string key, T new_value) => table[key] = new_value!;
+        
+        public static void set(this TomlTable table, string key, TomlTable new_value) => table.set<TomlTable>(key, new_value);
     }
 
     /// <summary>
@@ -43,7 +35,7 @@ namespace HeavyTracks.Models
     /// </summary>
     public class SpotifyWeigher
     {
-        public SpotifyWeigher(string client_id, string? user_token = null)
+        public SpotifyWeigher(string client_id = "", string? user_token = null)
         {
             m_client_id = client_id;
             m_user_token = user_token;
@@ -307,7 +299,7 @@ namespace HeavyTracks.Models
         /// retrieves a spotify user token, by allowing the user to log in to their spotify account.
         /// if login fails, or the user cancels, the token is not updated.
         /// </summary>
-        public void newUserToken()
+        public void newUserToken(bool use_browser = true)
         {
             // create the authentication url.
             var builder = new UriBuilder(AUTH_ENDPOINT);
@@ -324,6 +316,7 @@ namespace HeavyTracks.Models
 
             builder.Query = q.ToString();
 
+            if(use_browser)
             // open the constructed authorization url in the default browser.
             Process.Start("explorer", $"\"{builder}\"");
 
@@ -373,28 +366,64 @@ namespace HeavyTracks.Models
             }
         }
 
-
         public void cacheUserToken(string cache_file)
         {
-            TomlTable new_cache;
+            TomlTable new_cache = getCache(cache_file);
 
-            if (File.Exists(cache_file))
-                new_cache = Toml.ToModel(File.ReadAllText(cache_file));
-            else
-                new_cache = new();
+            new_cache.get("credentials").set("token", m_user_token ?? "");
 
-            //new_cache.get("credentials").set;
+            File.WriteAllText(cache_file, Toml.FromModel(new_cache));
         }
 
-        public void cacheCliendId(string cache_file) { }
+        public void cacheCliendId(string cache_file)
+        {
+            TomlTable new_cache = getCache(cache_file);
+
+            new_cache.get("credentials").set("id", m_client_id ?? "");
+
+        }
 
         /// <summary>
-        /// attempts to load a cache file into memory.
-        /// fails if file does not exists, or the cache file contains outdated values.
+        /// attempts to load a user token from a cache file into memory.
+        /// fails if file does not exists, or the cache file contains an outdated user token.
         /// </summary>
         /// <param name="cache_file"></param>
         /// <returns> true if load was succesfull, false if something went wrong. </returns>
-        public bool loadCache(string cache_file) { return false; }
+        public bool loadCachedToken(string cache_file)
+        {
+            var creds_file = getCache(cache_file);
+
+            string tmp_token = creds_file.get("credentials").get<string>("token");
+
+            if (tmp_token == "")
+                return false;
+
+            // check if token is still valid
+
+            m_user_token = tmp_token;
+
+            return true;
+        }
+
+        /// <summary>
+        /// attempts to load a client id from a cache file into memory.
+        /// fails if file does not exists, or the cache file contains no client id.
+        /// </summary>
+        /// <param name="cache_file"></param>
+        /// <returns> true if load was succesfull, false if something went wrong. </returns>
+        public bool loadCachedId(string cache_file)
+        {
+            var creds_file = getCache(cache_file);
+
+            string tmp_id = creds_file.get("credentials").get<string>("id");
+
+            if (tmp_id == "")
+                return false;
+
+            m_client_id = tmp_id;
+
+            return true;
+        }
 
         private string m_client_id = "";
         private string? m_user_token;
@@ -567,6 +596,29 @@ namespace HeavyTracks.Models
 
             return true;
         }
+        
+        private TomlTable getCache(string cache_source)
+        {
+            TomlTable new_cache;
+
+            if (File.Exists(cache_source))
+                new_cache = Toml.ToModel(File.ReadAllText(cache_source));
+            else
+                new_cache = new();
+
+            if (!new_cache.ContainsKey("credentials"))
+                new_cache.set("credentials", new());
+
+            var creds_table = new_cache.get("credentials");
+
+            if (!creds_table.ContainsKey("id"))
+                creds_table.set("id", "");
+
+            if (!creds_table.ContainsKey("token"))
+                creds_table.set("token", "");
+
+            return new_cache;
+        }
     }
 
     public class Track
@@ -598,6 +650,7 @@ namespace HeavyTracks.Models
         public string id { get; set; }
         public string uri { get; set; }
         public int length { get; set; }
+        public string length_str { get => string.Format("{0,2}:{1,2:00}", length / (1000 * 60), (length / 1000) % 60); }
     }
 
     public class Playlist
