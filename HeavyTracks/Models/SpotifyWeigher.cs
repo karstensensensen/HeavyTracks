@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -299,70 +300,76 @@ namespace HeavyTracks.Models
         /// retrieves a spotify user token, by allowing the user to log in to their spotify account.
         /// if login fails, or the user cancels, the token is not updated.
         /// </summary>
-        public void newUserToken(bool use_browser = true)
+        public void beginSession()
         {
-            // create the authentication url.
-            var builder = new UriBuilder(AUTH_ENDPOINT);
+            // setup state
 
-            builder.Port = -1;
+            m_state = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
 
-            var q = HttpUtility.ParseQueryString(builder.Query);
+            Uri endpoint = genUri(AUTH_ENDPOINT, new(){
+                { "client_id", m_client_id},
+                { "response_type", "code" },
+                { "redirect_uri",  $"http://localhost:{PORT}/callback"},
+                { "state", m_state },
+                { "scope", SCOPE },
+                { "show_dialog", "false" },
+                { "code_challenge_method", "S256" },
+                { "code_challenge", Convert.ToBase64String(SHA256.HashData(RandomNumberGenerator.GetBytes(64))) }
+            });
 
-            q["response_type"] = "token";
-            q["client_id"] = m_client_id;
-            q["scope"] = SCOPE;
-            q["redirect_uri"] = $"http://localhost:{PORT}/callback";
+            var resp = sendHttpRequest(HttpMethod.Get, endpoint);
 
-
-            builder.Query = q.ToString();
-
-            if(use_browser)
-            // open the constructed authorization url in the default browser.
-            Process.Start("explorer", $"\"{builder}\"");
-
-            // prepare the local webserver, to retreive the authentication token.
-            var listener = new HttpListener();
-            listener.Prefixes.Add($"http://localhost:{PORT}/callback/");
-            listener.Start();
-
-            // if the QueryString does not contain an access_token parameter, it either means no access_token was recieved,
-            // or that the token is stored in the url hash
-            // as the hash is not sent to the webserver, we instead return a html file containing a small javascript snippet,
-            // that converts the hash parameters to standard url parameters, that can be read by the webserver.
-
-            while (true)
+            if (true)
             {
+                // open the constructed authorization url in the default browser.
+                Process.Start(new ProcessStartInfo() { FileName = endpoint.ToString(), UseShellExecute = true });
+                // Process.Start("explorer", $"\"{builder}\"");
+
+                // prepare the local webserver, to retreive the authentication token.
+                var listener = new HttpListener();
+                listener.Prefixes.Add($"http://localhost:{PORT}/callback/");
+                listener.Start();
+
+                // if the QueryString does not contain an access_token parameter, it either means no access_token was recieved,
+                // or that the token is stored in the url hash
+                // as the hash is not sent to the webserver, we instead return a html file containing a small javascript snippet,
+                // that converts the hash parameters to standard url parameters, that can be read by the webserver.
+
                 var context = listener.GetContext();
 
 
                 var req = context.Request;
                 var res = context.Response;
+                    
+                res.ContentType = "text/html";
+                    
+                // html file, that auto closes the tab, is sent as a response.
+                var resp_content = File.ReadAllBytes("Assets/ClosePage.html");
+                res.OutputStream.Write(resp_content, 0, resp_content.Count());
 
-                if (req.QueryString["access_token"] == null)
+                if (req.QueryString["error"] != null)
                 {
-                    res.StatusCode = 200;
-                    res.ContentType = "text/html";
-
-                    var content = File.ReadAllBytes("Assets/InsertHash.html");
-
-                    res.OutputStream.Write(content, 0, content.Count());
-                    res.Close();
-                }
-                else
-                {
-                    m_user_token = req.QueryString["access_token"]!;
-
-                    res.StatusCode = 200;
-                    res.ContentType = "text/html";
-
-                    // html file, that auto closes the tab, is sent as a response.
-                    var content = File.ReadAllBytes("Assets/ClosePage.html");
-
-                    res.OutputStream.Write(content, 0, content.Count());
+                    res.StatusCode = 404;
                     res.Close();
 
-                    break;
+                    return;
                 }
+
+                res.StatusCode = 200;
+                res.ContentType = "text/html";
+
+                // html file, that auto closes the tab, is sent as a response.
+                var content = File.ReadAllBytes("Assets/ClosePage.html");
+
+                res.OutputStream.Write(content, 0, content.Count());
+                res.Close();
+
+                var code = req.QueryString["code"];
+
+                // aquire access token
+
+                sendHttpRequest(HttpMethod.Post, new($"{API_ENDPOINT}/token"), headers: new() { { "Content-Type", "application/x-www-form-urlencoded" } }, body: "EEE");
+
             }
         }
 
@@ -426,6 +433,7 @@ namespace HeavyTracks.Models
         }
 
         private string m_client_id = "";
+        private string m_state = "";
         private string? m_user_token;
         private string? m_user_id;
 
@@ -440,6 +448,47 @@ namespace HeavyTracks.Models
         private static readonly int MAX_OFFSET = 100_000;
 
         private int max_weight = 5;
+
+        /// <summary>
+        /// sends a http request to the specified endpoint, with the specified content.
+        /// </summary>
+        /// <param name="method"> the http method to use when sending the request </param>
+        /// <param name="endpoint"> where the request should be sent to </param>
+        /// <param name="query_parameters"> what query parameters the request url should contain </param>
+        /// <param name="headers"> what headers the request should contain </param>
+        /// <param name="body"> what the body of the request should contain </param>
+        /// <returns> the response for the sent http request </returns>
+        private HttpResponseMessage sendHttpRequest(HttpMethod method, Uri endpoint, Dictionary<string, string>? headers = null, string? body=null)
+        {
+            HttpRequestMessage msg = new(method, endpoint);
+
+            // setup headers
+            if(headers != null)
+                foreach (var header_param in headers)
+                    msg.Headers.Add(header_param.Key, header_param.Value);
+            
+            HttpResponseMessage resp = m_client.Send(msg);
+
+            return resp;
+        }
+
+        private Uri genUri(Uri endpoint, Dictionary<string, string>? query_parameters = null)
+        {
+            var builder = new UriBuilder(endpoint);
+
+            // setup query parameters
+            if (query_parameters != null)
+            {
+                var q = HttpUtility.ParseQueryString(builder.Query);
+
+                foreach (var param in query_parameters)
+                    q[param.Key] = param.Value;
+
+                builder.Query = q.ToString();
+            }
+
+            return builder.Uri;
+        }
 
         /// <summary>
         /// constructs a HttpRequestMessage with the specified method.

@@ -21,7 +21,7 @@ namespace HeavyTracks.ViewModels
 
             if (!weigher.loadCachedToken(creds_file))
             {
-                weigher.newUserToken();
+                weigher.beginSession();
                 weigher.cacheUserToken(creds_file);
             }
 
