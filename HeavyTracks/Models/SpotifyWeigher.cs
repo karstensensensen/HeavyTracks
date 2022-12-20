@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using DynamicData;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Tomlyn;
@@ -302,10 +304,19 @@ namespace HeavyTracks.Models
         /// </summary>
         public void beginSession()
         {
-            // setup state
+            // setup state and challenge code
 
             m_state = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
 
+            // neither the challenge code, or the challenge code hash can contain +, / or =, so these are replaced
+
+            m_challenge = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            m_challenge = m_challenge.Replace('+', '-').Replace('/', '-').TrimEnd('=');
+
+
+            var vhash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(m_challenge)));
+            vhash = vhash.Replace('+', '-').Replace('/', '-').TrimEnd('=');
+            
             Uri endpoint = genUri(AUTH_ENDPOINT, new(){
                 { "client_id", m_client_id},
                 { "response_type", "code" },
@@ -314,104 +325,84 @@ namespace HeavyTracks.Models
                 { "scope", SCOPE },
                 { "show_dialog", "false" },
                 { "code_challenge_method", "S256" },
-                { "code_challenge", Convert.ToBase64String(SHA256.HashData(RandomNumberGenerator.GetBytes(64))) }
+                { "code_challenge", vhash }
             });
 
-            var resp = sendHttpRequest(HttpMethod.Get, endpoint);
 
-            if (true)
+            // open the constructed authorization url in the default browser.
+            Process.Start(new ProcessStartInfo() { FileName = endpoint.ToString(), UseShellExecute = true });
+            // Process.Start("explorer", $"\"{builder}\"");
+
+            // prepare the local webserver, to retreive the authentication token.
+            var listener = new HttpListener();
+            listener.Prefixes.Add($"http://localhost:{PORT}/callback/");
+            listener.Start();
+
+            // if the QueryString does not contain an access_token parameter, it either means no access_token was recieved,
+            // or that the token is stored in the url hash
+            // as the hash is not sent to the webserver, we instead return a html file containing a small javascript snippet,
+            // that converts the hash parameters to standard url parameters, that can be read by the webserver.
+
+            var context = listener.GetContext();
+
+
+            var req = context.Request;
+            var res = context.Response;
+                    
+            res.ContentType = "text/html";
+                    
+            // html file, that auto closes the tab, is sent as a response.
+            var resp_content = File.ReadAllBytes("Assets/ClosePage.html");
+            res.OutputStream.Write(resp_content, 0, resp_content.Count());
+
+            if (req.QueryString["error"] != null)
             {
-                // open the constructed authorization url in the default browser.
-                Process.Start(new ProcessStartInfo() { FileName = endpoint.ToString(), UseShellExecute = true });
-                // Process.Start("explorer", $"\"{builder}\"");
-
-                // prepare the local webserver, to retreive the authentication token.
-                var listener = new HttpListener();
-                listener.Prefixes.Add($"http://localhost:{PORT}/callback/");
-                listener.Start();
-
-                // if the QueryString does not contain an access_token parameter, it either means no access_token was recieved,
-                // or that the token is stored in the url hash
-                // as the hash is not sent to the webserver, we instead return a html file containing a small javascript snippet,
-                // that converts the hash parameters to standard url parameters, that can be read by the webserver.
-
-                var context = listener.GetContext();
-
-
-                var req = context.Request;
-                var res = context.Response;
-                    
-                res.ContentType = "text/html";
-                    
-                // html file, that auto closes the tab, is sent as a response.
-                var resp_content = File.ReadAllBytes("Assets/ClosePage.html");
-                res.OutputStream.Write(resp_content, 0, resp_content.Count());
-
-                if (req.QueryString["error"] != null)
-                {
-                    res.StatusCode = 404;
-                    res.Close();
-
-                    return;
-                }
-
-                res.StatusCode = 200;
-                res.ContentType = "text/html";
-
-                // html file, that auto closes the tab, is sent as a response.
-                var content = File.ReadAllBytes("Assets/ClosePage.html");
-
-                res.OutputStream.Write(content, 0, content.Count());
+                res.StatusCode = 500;
                 res.Close();
 
-                var code = req.QueryString["code"];
-
-                // aquire access token
-
-                sendHttpRequest(HttpMethod.Post, new($"{API_ENDPOINT}/token"),
-                    headers: new() { { "Content-Type", "application/x-www-form-urlencoded" } },
-                    body: "");
-
+                return;
             }
-        }
 
-        public void cacheUserToken(string cache_file)
-        {
-            TomlTable new_cache = getCache(cache_file);
+            res.StatusCode = 200;
+            res.ContentType = "text/html";
 
-            new_cache.get("credentials").set("token", m_user_token ?? "");
+            // html file, that auto closes the tab, is sent as a response.
+            var content = File.ReadAllBytes("Assets/ClosePage.html");
 
-            File.WriteAllText(cache_file, Toml.FromModel(new_cache));
-        }
+            res.OutputStream.Write(content, 0, content.Count());
+            res.Close();
 
-        public void cacheCliendId(string cache_file)
-        {
-            TomlTable new_cache = getCache(cache_file);
+            string code = req.QueryString["code"]!;
 
-            new_cache.get("credentials").set("id", m_client_id ?? "");
+            // aquire access token
 
-        }
+            var access_response = sendHttpRequest(HttpMethod.Post, TOKEN_ENDPOINT,
+                content_type: "application/x-www-form-urlencoded",
+                body: new FormUrlEncodedContent(new Dictionary<string, string>() {
+                    { "grant_type", "authorization_code" },
+                    { "code", code },
+                    { "redirect_uri",  $"http://localhost:{PORT}/callback" },
+                    { "client_id", m_client_id },
+                    { "code_verifier", m_challenge }
+                }).ReadAsStringAsync().Result);
 
-        /// <summary>
-        /// attempts to load a user token from a cache file into memory.
-        /// fails if file does not exists, or the cache file contains an outdated user token.
-        /// </summary>
-        /// <param name="cache_file"></param>
-        /// <returns> true if load was succesfull, false if something went wrong. </returns>
-        public bool loadCachedToken(string cache_file)
-        {
-            var creds_file = getCache(cache_file);
+            if(!access_response.IsSuccessStatusCode)
+                return;
 
-            string tmp_token = creds_file.get("credentials").get<string>("token");
+            var access_body_json = JObject.Parse(access_response.Content.ReadAsStringAsync().Result);
 
-            if (tmp_token == "")
-                return false;
+            Trace.WriteLine(access_body_json);
 
-            // check if token is still valid
+            var token = access_body_json["access_token"]?.ToString();
+            var refresh_token = access_body_json["refresh_token"]?.ToString();
+            var token_expires_str = access_body_json["expires_in"]?.ToString();
 
-            m_user_token = tmp_token;
+            if (token == null || refresh_token == null || token_expires_str == null)
+                return;
 
-            return true;
+            m_token = token;
+            m_refresh_token = refresh_token;
+            m_token_expires = DateTime.Now.AddSeconds(int.Parse(token_expires_str));
         }
 
         /// <summary>
@@ -420,11 +411,14 @@ namespace HeavyTracks.Models
         /// </summary>
         /// <param name="cache_file"></param>
         /// <returns> true if load was succesfull, false if something went wrong. </returns>
-        public bool loadCachedId(string cache_file)
+        public bool loadClientId(string cache_file)
         {
-            var creds_file = getCache(cache_file);
+            if (!File.Exists(cache_file))
+                return false;
+            
+            TomlTable creds_file = Toml.ToModel(File.ReadAllText(cache_file));
 
-            string tmp_id = creds_file.get("credentials").get<string>("id");
+            string tmp_id = creds_file.get<string>("client_id");
 
             if (tmp_id == "")
                 return false;
@@ -436,18 +430,26 @@ namespace HeavyTracks.Models
 
         private string m_client_id = "";
         private string m_state = "";
-        private string? m_user_token;
-        private string? m_user_id;
+        private string m_challenge = "";
+        private string m_user_token = "";
+        private string m_user_id = "";
+
+        private string m_refresh_token = "";
+        private string m_token = "";
+        private DateTime m_token_expires;
 
         private HttpClient m_client = new();
 
         private static readonly Uri AUTH_ENDPOINT = new("https://accounts.spotify.com/authorize");
         private static readonly Uri API_ENDPOINT = new("https://api.spotify.com/v1/");
+        private static readonly Uri TOKEN_ENDPOINT = new("https://accounts.spotify.com/api/token");
         private static readonly uint PORT = 8888;
         private static readonly string SCOPE = "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public";
         private static readonly int MAX_RECV = 50;
         private static readonly int MAX_SEND = 100;
         private static readonly int MAX_OFFSET = 100_000;
+
+        //private static readonly long TOKEN_REFRESH_MARGIN = 10;
 
         private int max_weight = 5;
 
@@ -460,15 +462,19 @@ namespace HeavyTracks.Models
         /// <param name="headers"> what headers the request should contain </param>
         /// <param name="body"> what the body of the request should contain </param>
         /// <returns> the response for the sent http request </returns>
-        private HttpResponseMessage sendHttpRequest(HttpMethod method, Uri endpoint, Dictionary<string, string>? headers = null, string? body=null)
+        private HttpResponseMessage sendHttpRequest(HttpMethod method, Uri endpoint, Dictionary<string, string>? headers = null, string? body=null, string? content_type=null)
         {
             HttpRequestMessage msg = new(method, endpoint);
 
+            if (body != null)
+                msg.Content = new StringContent(body, Encoding.UTF8, content_type);
+
+
             // setup headers
-            if(headers != null)
+            if (headers != null)
                 foreach (var header_param in headers)
                     msg.Headers.Add(header_param.Key, header_param.Value);
-            
+
             HttpResponseMessage resp = m_client.Send(msg);
 
             return resp;
@@ -490,6 +496,32 @@ namespace HeavyTracks.Models
             }
 
             return builder.Uri;
+        }
+
+        private string? getToken(bool force_refresh)
+        {
+            if(force_refresh || m_token_expires < DateTime.Now)
+            {
+                var resp = sendHttpRequest(HttpMethod.Post, TOKEN_ENDPOINT, body: new FormUrlEncodedContent(new Dictionary<string, string>() {
+                    { "grant_type", "refresh_token" },
+                    { "refresh_token", m_refresh_token },
+                    { "client_id", m_client_id },
+                }).ReadAsStringAsync().Result, content_type: "application/x-www-form-urlencoded");
+
+                if (!resp.IsSuccessStatusCode)
+                    return null;
+
+                var json_resp = JObject.Parse(resp.Content.ReadAsStringAsync().Result);
+
+                if (json_resp["expires_in"] == null || json_resp["refresh_token"] == null || json_resp["token"] == null)
+                    return null;
+
+                m_token_expires = DateTime.Now.AddSeconds(int.Parse(json_resp["expires_in"]!.ToString()));
+                m_refresh_token = json_resp["refresh_token"]!.ToString();
+                m_token = json_resp["token"]!.ToString();
+            }
+
+            return m_token;
         }
 
         /// <summary>
@@ -646,29 +678,6 @@ namespace HeavyTracks.Models
             }
 
             return true;
-        }
-        
-        private TomlTable getCache(string cache_source)
-        {
-            TomlTable new_cache;
-
-            if (File.Exists(cache_source))
-                new_cache = Toml.ToModel(File.ReadAllText(cache_source));
-            else
-                new_cache = new();
-
-            if (!new_cache.ContainsKey("credentials"))
-                new_cache.set("credentials", new());
-
-            var creds_table = new_cache.get("credentials");
-
-            if (!creds_table.ContainsKey("id"))
-                creds_table.set("id", "");
-
-            if (!creds_table.ContainsKey("token"))
-                creds_table.set("token", "");
-
-            return new_cache;
         }
     }
 

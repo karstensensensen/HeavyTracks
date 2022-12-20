@@ -13,17 +13,13 @@ namespace HeavyTracks.ViewModels
     {
         public HeavyTracksVM()
         {
-            if (!weigher.loadCachedId(creds_file))
+            if (!weigher.loadClientId(creds_file))
             {
                 // TODO: should display an error popup requesting a client id? 
                 // this is only hit if something major goes wrong, or if the user manually edited the creds file.
             }
 
-            if (!weigher.loadCachedToken(creds_file))
-            {
-                weigher.beginSession();
-                weigher.cacheUserToken(creds_file);
-            }
+            weigher.beginSession();
 
             Playlists = weigher.getPlaylists();
 
