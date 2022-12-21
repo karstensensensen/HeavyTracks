@@ -364,6 +364,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/HeavyTracks/creds.toml
-/design_creds.toml
 /Assets
