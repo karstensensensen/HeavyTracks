@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -38,26 +39,12 @@ namespace HeavyTracks.Models
     /// </summary>
     public class SpotifyWeigher
     {
-        public SpotifyWeigher(string client_id = "", string? user_token = null)
+        public SpotifyWeigher(string client_id = "")
         {
             m_client_id = client_id;
-            m_user_token = user_token;
         }
 
         public delegate void ApiErrCallback(HttpStatusCode status, JObject content);
-
-        public ApiErrCallback? missing_creds;
-        public ApiErrCallback? api_error;
-
-        public int MaxWeight
-        {
-            get => max_weight;
-            set
-            {
-                max_weight = value;
-            }
-        }
-
 
         /// <summary>
         /// retrieves the id of the current user.
@@ -66,8 +53,8 @@ namespace HeavyTracks.Models
         public string? getUserId()
         {
             // get the user id from the web api, if it is not already cached.
-
-            if (m_user_id == null)
+            
+            if (m_user_id == "")
             {
                 var request = spotifyApiReq(HttpMethod.Get, "me");
 
@@ -76,21 +63,13 @@ namespace HeavyTracks.Models
                     var response = sendApiReq(request);
 
                     if (response?.IsSuccessStatusCode ?? false)
-                        m_user_id = JObject.Parse(response.Content.ReadAsStringAsync().Result)["id"]?.ToString();
+                        m_user_id = JObject.Parse(response.Content.ReadAsStringAsync().Result)["id"]!.ToString();
                 }
 
             }
 
             return m_user_id;
         }
-
-        /// <summary>
-        /// 
-        /// checks whether a token is currently avaliable in the SpotifyContext.
-        /// does not check if the token is expired.
-        /// 
-        /// </summary>
-        public bool hasToken() => m_user_token != null;
 
         /// <summary>
         /// retrieves a list of all the playlists that has been created by the active user.
@@ -299,23 +278,34 @@ namespace HeavyTracks.Models
         }
 
         /// <summary>
-        /// retrieves a spotify user token, by allowing the user to log in to their spotify account.
-        /// if login fails, or the user cancels, the token is not updated.
+        /// 
+        /// begins a "session", meaning any method calls, that require use of the spotify web api, can be used, after this method is called.
+        /// 
+        /// requires a client id to be loaded, before this is called (see loadClientId)
+        /// 
+        /// when called, the user is prompted for authentication, in order for subsequent calls to the spotify web api to be properly authenticated.
+        /// if the user cancels this authentication, none of the methods that require the spotify web api, will work (see return value).
+        /// 
         /// </summary>
-        public void beginSession()
+        /// <returns> true if user consented to the session, false if user canceled the authentication </returns>
+        public bool beginSession()
         {
+            // for setup of request, see: https://developer.spotify.com/documentation/general/guides/authorization/code-flow/
+            
             // setup state and challenge code
 
             m_state = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
 
-            // neither the challenge code, or the challenge code hash can contain +, / or =, so these are replaced
+            // neither the challenge code, or the challenge code hash can contain + or /, so these are replaced with '-' and '_'.
+            // see: https://en.wikipedia.org/wiki/Base64#URL_applications
 
             m_challenge = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            m_challenge = m_challenge.Replace('+', '-').Replace('/', '-').TrimEnd('=');
+            Trace.WriteLine(m_challenge);
+            m_challenge = m_challenge.Replace('+', '-').Replace('/', '_').TrimEnd('=');
 
 
             var vhash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(m_challenge)));
-            vhash = vhash.Replace('+', '-').Replace('/', '-').TrimEnd('=');
+            vhash = vhash.Replace('+', '-').Replace('/', '_').TrimEnd('=');
             
             Uri endpoint = genUri(AUTH_ENDPOINT, new(){
                 { "client_id", m_client_id},
@@ -323,17 +313,15 @@ namespace HeavyTracks.Models
                 { "redirect_uri",  $"http://localhost:{PORT}/callback"},
                 { "state", m_state },
                 { "scope", SCOPE },
-                { "show_dialog", "false" },
+                { "show_dialog", "true" },
                 { "code_challenge_method", "S256" },
                 { "code_challenge", vhash }
             });
 
-
             // open the constructed authorization url in the default browser.
             Process.Start(new ProcessStartInfo() { FileName = endpoint.ToString(), UseShellExecute = true });
-            // Process.Start("explorer", $"\"{builder}\"");
 
-            // prepare the local webserver, to retreive the authentication token.
+            // prepare the local webserver, to show the authentication site to the user.
             var listener = new HttpListener();
             listener.Prefixes.Add($"http://localhost:{PORT}/callback/");
             listener.Start();
@@ -355,26 +343,18 @@ namespace HeavyTracks.Models
             var resp_content = File.ReadAllBytes("Assets/ClosePage.html");
             res.OutputStream.Write(resp_content, 0, resp_content.Count());
 
+            // check if user canceled login
             if (req.QueryString["error"] != null)
-            {
-                res.StatusCode = 500;
-                res.Close();
-
-                return;
-            }
-
-            res.StatusCode = 200;
-            res.ContentType = "text/html";
-
-            // html file, that auto closes the tab, is sent as a response.
-            var content = File.ReadAllBytes("Assets/ClosePage.html");
-
-            res.OutputStream.Write(content, 0, content.Count());
-            res.Close();
-
+                if (req.QueryString["error"] == "access_denied")
+                    return false;
+                else
+                    throw new SpotifyWeigherException($"User authentication failed during consent dialog");
+            
             string code = req.QueryString["code"]!;
 
-            // aquire access token
+            res.Close();
+            
+            // aquire access token and refresh token
 
             var access_response = sendHttpRequest(HttpMethod.Post, TOKEN_ENDPOINT,
                 content_type: "application/x-www-form-urlencoded",
@@ -386,30 +366,27 @@ namespace HeavyTracks.Models
                     { "code_verifier", m_challenge }
                 }).ReadAsStringAsync().Result);
 
-            if(!access_response.IsSuccessStatusCode)
-                return;
-
+            if (!access_response.IsSuccessStatusCode)
+                throw new SpotifyWeigherException($"Access token get request failed", access_response);
+            
             var access_body_json = JObject.Parse(access_response.Content.ReadAsStringAsync().Result);
 
-            Trace.WriteLine(access_body_json);
+            var access_params = getJsonParams(access_body_json, new() { "access_token", "refresh_token", "expires_in"});
 
-            var token = access_body_json["access_token"]?.ToString();
-            var refresh_token = access_body_json["refresh_token"]?.ToString();
-            var token_expires_str = access_body_json["expires_in"]?.ToString();
+            m_token = access_params["access_token"];
+            m_refresh_token = access_params["refresh_token"];
+            m_token_expires = DateTime.Now.AddSeconds(int.Parse(access_params["expires_in"]));
 
-            if (token == null || refresh_token == null || token_expires_str == null)
-                return;
-
-            m_token = token;
-            m_refresh_token = refresh_token;
-            m_token_expires = DateTime.Now.AddSeconds(int.Parse(token_expires_str));
+            return true;
         }
 
         /// <summary>
         /// attempts to load a client id from a cache file into memory.
         /// fails if file does not exists, or the cache file contains no client id.
         /// </summary>
-        /// <param name="cache_file"></param>
+        /// <param name="cache_file">
+        /// toml file containing the key "client_id" in the global namespace, with the client id to be loaded, as its value-
+        /// </param>
         /// <returns> true if load was succesfull, false if something went wrong. </returns>
         public bool loadClientId(string cache_file)
         {
@@ -431,7 +408,6 @@ namespace HeavyTracks.Models
         private string m_client_id = "";
         private string m_state = "";
         private string m_challenge = "";
-        private string m_user_token = "";
         private string m_user_id = "";
 
         private string m_refresh_token = "";
@@ -479,7 +455,11 @@ namespace HeavyTracks.Models
 
             return resp;
         }
-
+        
+        /// <summary>
+        /// generates a URI with the passed query parameters dictionary,
+        /// where a key will be seen as a parameter with a value equal to the keys corresponding value.
+        /// </summary>
         private Uri genUri(Uri endpoint, Dictionary<string, string>? query_parameters = null)
         {
             var builder = new UriBuilder(endpoint);
@@ -498,7 +478,34 @@ namespace HeavyTracks.Models
             return builder.Uri;
         }
 
-        private string? getToken(bool force_refresh)
+        /// <summary>
+        /// does nothing if all the passed parameters exist in the json object, otherwise a [exception] exception is thrown, describing which parameter is missing.
+        /// </summary>
+        /// <param name="json"></param>
+        /// <param name=""></param>
+        /// <param name=""></param>
+        private Dictionary<string, string> getJsonParams(JObject json, List<string> json_params)
+        {
+            Dictionary<string, string> res = new();
+
+            foreach (var para in json_params)
+                if (!json.ContainsKey(para))
+                    throw new SpotifyWeigherException($"Missing [{para}] parameter in returned json body:\n{json}");
+                else
+                    res.Add(para, json[para]!.ToString()!);
+
+            return res;
+        }
+
+        /// <summary>
+        /// 
+        /// retrieves a valid spotify api token, and auto refreshes if the currently stored token has expired.
+        /// 
+        /// </summary>
+        /// <param name="force_refresh"> if true, forces a token refresh even if the current token has not expired</param>
+        /// <returns> spotify api token </returns>
+        /// <exception cref="SpotifyWeigherException"> gets thrown if refresh of token fails </exception>
+        private string getToken(bool force_refresh = false)
         {
             if(force_refresh || m_token_expires < DateTime.Now)
             {
@@ -509,16 +516,15 @@ namespace HeavyTracks.Models
                 }).ReadAsStringAsync().Result, content_type: "application/x-www-form-urlencoded");
 
                 if (!resp.IsSuccessStatusCode)
-                    return null;
+                    throw new SpotifyWeigherException("Refresh request failed", resp);
 
                 var json_resp = JObject.Parse(resp.Content.ReadAsStringAsync().Result);
 
-                if (json_resp["expires_in"] == null || json_resp["refresh_token"] == null || json_resp["token"] == null)
-                    return null;
+                var json_params = getJsonParams(json_resp, new() { "expires_in", "refresh_token", "token" });
 
-                m_token_expires = DateTime.Now.AddSeconds(int.Parse(json_resp["expires_in"]!.ToString()));
-                m_refresh_token = json_resp["refresh_token"]!.ToString();
-                m_token = json_resp["token"]!.ToString();
+                m_token_expires = DateTime.Now.AddSeconds(int.Parse(json_params["expires_in"]));
+                m_refresh_token = json_params["refresh_token"];
+                m_token = json_params["token"];
             }
 
             return m_token;
@@ -535,7 +541,7 @@ namespace HeavyTracks.Models
         {
             HttpRequestMessage req_msg = new(method, $"{API_ENDPOINT}{endpoint}");
 
-            req_msg.Headers.Add("Authorization", $"Bearer {m_user_token}");
+            req_msg.Headers.Add("Authorization", $"Bearer {getToken()}");
 
             return req_msg;
         }
@@ -552,18 +558,8 @@ namespace HeavyTracks.Models
 
             var response = m_client.SendAsync(msg).Result;
 
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                missing_creds?.Invoke(response.StatusCode, JObject.Parse(response.Content.ReadAsStringAsync().Result));
-
-                return null;
-            }
-            else if (!response.IsSuccessStatusCode)
-            {
-                api_error?.Invoke(response.StatusCode, JObject.Parse(response.Content.ReadAsStringAsync().Result));
-
-                return null;
-            }
+            if (!response.IsSuccessStatusCode)
+                throw new SpotifyWeigherException("Api request failed", response);
 
             return response;
         }
@@ -575,7 +571,7 @@ namespace HeavyTracks.Models
         /// <param name="endpoint"> spotify api endpoint, which returns a variable number of items</param>
         /// <param name="query"> additional query parameters </param>
         /// <returns> list of the varaible json items returned from the spotify api </returns>
-        private List<JObject> getAllItems(HttpMethod method, string endpoint, string query = "")
+        private List<JObject> getAllItems(HttpMethod method, string endpoint)
         {
             /// a spotify query with a list type of result, will only return a maximum of 50 entries per request.
             /// in order to recieve all of the values in for example a playlist,
@@ -588,24 +584,17 @@ namespace HeavyTracks.Models
 
             while (pages * MAX_RECV < MAX_OFFSET)
             {
-                var msg = spotifyApiReq(method, endpoint);
+                var response = sendHttpRequest(method, genUri(new($"{API_ENDPOINT}{endpoint}"),
+                    new(){
+                    { "limit", MAX_RECV.ToString() },
+                    { "offset", (MAX_RECV * pages).ToString() }
+                }),
+                headers: new() {
+                    {"Authorization", $"Bearer {m_token}" }
+                });
 
-                if (msg == null)
-                    break;
-
-                var builder = new UriBuilder(msg.RequestUri ?? new(""));
-                var item_query = HttpUtility.ParseQueryString(query);
-
-                item_query["limit"] = MAX_RECV.ToString();
-                item_query["offset"] = (MAX_RECV * pages).ToString();
-                builder.Query = item_query.ToString();
-
-                msg.RequestUri = builder.Uri;
-
-
-                var response = sendApiReq(msg);
-
-                if (response == null || !response.IsSuccessStatusCode) break;
+                if (!response.IsSuccessStatusCode)
+                    throw new SpotifyWeigherException("Failed getting items", response);
 
                 var content = JObject.Parse(response.Content.ReadAsStringAsync().Result);
 
@@ -635,7 +624,7 @@ namespace HeavyTracks.Models
         /// <param name="values"> the list of values that should be passed to the endpoint </param>
         /// <param name="body"> (optional) the rest of the body that should be passed to the endpoint, should not contain [property_name] </param>
         /// <param name="query"> (optional) additional query parameters to be passed to the endpoint </param>
-        private bool sendAllItems(HttpMethod method, string endpoint, string property_name, List<JToken> values, JObject? body = null, string query = "")
+        private void sendAllItems(HttpMethod method, string endpoint, string property_name, List<JToken> values, JObject? body = null)
         {
             body ??= new();
 
@@ -643,20 +632,6 @@ namespace HeavyTracks.Models
 
             while (pages * MAX_SEND < values.Count())
             {
-                var msg = spotifyApiReq(method, endpoint);
-
-                if (msg == null)
-                    break;
-
-                // add the passed query parameters
-
-                var builder = new UriBuilder(msg.RequestUri ?? new(""));
-                var item_query = HttpUtility.ParseQueryString(query);
-
-                builder.Query = item_query.ToString();
-
-                msg.RequestUri = builder.Uri;
-
                 // construct a json array, which contains at most MAX_SEND elements.
 
                 var jarr = new JArray();
@@ -666,18 +641,17 @@ namespace HeavyTracks.Models
 
                 body[property_name] = jarr;
 
-                msg.Content = new StringContent(body.ToString());
-                msg.Content.Headers.ContentType = new("application/json");
-
-                var response = sendApiReq(msg);
+                var response = sendHttpRequest(method, new($"{API_ENDPOINT}{endpoint}"),
+                    headers: new() {
+                    {"Authorization", $"Bearer {m_token}" }
+                    },
+                    body: body.ToString(), content_type: "application/json");
 
                 if (!response?.IsSuccessStatusCode ?? true)
-                    return false;
+                    throw new SpotifyWeigherException("Sending of items failed", response!);
 
                 pages++;
             }
-
-            return true;
         }
     }
 
