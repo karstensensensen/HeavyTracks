@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace HeavyTracks.ViewModels
 {
@@ -22,13 +23,13 @@ namespace HeavyTracks.ViewModels
                     // this is only hit if something major goes wrong, or if the user manually edited the creds file.
                 }
 
-                weigher.beginSession();
+                weigher.beginSession().ConfigureAwait(false);
 
-                Playlists = weigher.getPlaylists();
+                Playlists = weigher.getPlaylists().Result;
             }
+            else
+                Playlists = new();
         }
-
-
 
         readonly string id_file = "creds.toml";
 
@@ -41,24 +42,34 @@ namespace HeavyTracks.ViewModels
             get => selected_playlist;
             set
             {
-                this.RaiseAndSetIfChanged(ref selected_playlist, value);
-                SelectedPlaylistTracks = weigher.getPlaylistTracks(selected_playlist!);
-
+                SelectedPlaylistTracks = null;
                 this.RaisePropertyChanged(nameof(SelectedPlaylistTracks));
+
+                new Task(async () =>
+                {
+                    this.RaiseAndSetIfChanged(ref selected_playlist, value);
+                    SelectedPlaylistTracks = await weigher.getPlaylistTracks(selected_playlist!);
+
+                    this.RaisePropertyChanged(nameof(SelectedPlaylistTracks));
+                }).Start();
             }
         }
 
         List<Track>? SelectedPlaylistTracks { get; set; }
 
-        public void apply()
+        public async Task apply()
         {
-            weigher.pushTracks(SelectedPlaylistTracks, SelectedPlaylist, true);
+            if(SelectedPlaylist is not null && SelectedPlaylistTracks is not null)
+                await weigher.pushTracks(SelectedPlaylistTracks, SelectedPlaylist, true);
         }
 
-        public void sync()
+        public async Task sync()
         {
-            SelectedPlaylistTracks = weigher.getPlaylistTracks(selected_playlist);
-            this.RaisePropertyChanged(nameof(SelectedPlaylistTracks));
+            if (SelectedPlaylist is not null)
+            {
+                SelectedPlaylistTracks = await weigher.getPlaylistTracks(SelectedPlaylist);
+                this.RaisePropertyChanged(nameof(SelectedPlaylistTracks));
+            }
         }
 
     }

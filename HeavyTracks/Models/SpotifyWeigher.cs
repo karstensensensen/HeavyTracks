@@ -50,20 +50,20 @@ namespace HeavyTracks.Models
         /// retrieves the id of the current user.
         /// if the token is missing or expired, this function returns null.
         /// </summary>
-        public string? getUserId()
+        public async Task<string?> getUserId()
         {
             // get the user id from the web api, if it is not already cached.
             
             if (m_user_id == "")
             {
-                var request = spotifyApiReq(HttpMethod.Get, "me");
+                var request = await spotifyApiReq(HttpMethod.Get, "me");
 
                 if (request != null)
                 {
                     var response = sendApiReq(request);
 
                     if (response?.IsSuccessStatusCode ?? false)
-                        m_user_id = JObject.Parse(response.Content.ReadAsStringAsync().Result)["id"]!.ToString();
+                        m_user_id = JObject.Parse(await response.Content.ReadAsStringAsync())["id"]!.ToString();
                 }
 
             }
@@ -77,12 +77,12 @@ namespace HeavyTracks.Models
         /// the order of the playlists should match the order of the displayed in Spotify.
         /// 
         /// </summary>
-        public List<Playlist> getPlaylists()
+        public async Task<List<Playlist>> getPlaylists()
         {
-            var items = getAllItems(HttpMethod.Get, $"users/{getUserId()}/playlists");
+            var items = getAllItems(HttpMethod.Get, $"users/{await getUserId()}/playlists");
             List<Playlist> playlists = new();
 
-            foreach (var item in items)
+            foreach (var item in await items)
             {
                 Playlist playlist = new(item["collaborative"]?.Value<bool>() ?? false, item["public"]?.Value<bool>() ?? false,
                     item["name"]?.ToString() ?? "INVALID", item["description"]?.ToString() ?? "", item["id"]?.ToString() ?? "");
@@ -99,12 +99,12 @@ namespace HeavyTracks.Models
         /// if no image is associated with the playlist, null is returned.
         /// 
         /// </summary>
-        public string? getPlaylistImgUrl(Playlist playlist)
+        public async Task<string?> getPlaylistImgUrl(Playlist playlist)
         {
-            var req = spotifyApiReq(HttpMethod.Get, $"playlists/{playlist.id}/images");
+            var req = await spotifyApiReq(HttpMethod.Get, $"playlists/{playlist.id}/images");
             var res = sendApiReq(req);
 
-            var content = JToken.Parse(res?.Content.ReadAsStringAsync().Result ?? "[]");
+            var content = JToken.Parse((await res?.Content.ReadAsStringAsync()) ?? "[]");
 
             if(content.Count() > 0)
                 return content[0]?["url"]?.ToString();
@@ -112,7 +112,7 @@ namespace HeavyTracks.Models
                 return null;
         }
 
-        public List<Track> getPlaylistTracks(Playlist target)
+        public async Task<List<Track>> getPlaylistTracks(Playlist target)
         {
             Dictionary<string, (Track, uint)> unordered_tracks = new();
 
@@ -121,7 +121,7 @@ namespace HeavyTracks.Models
             uint i = 0;
             int number = 0;
 
-            foreach (var item in items)
+            foreach (var item in await items)
             {
 
                 var track_item = item["track"];
@@ -183,7 +183,7 @@ namespace HeavyTracks.Models
         ///             
         /// </param>
         /// <returns> the created / referenced playlist, or null if it failed </returns>
-        public Playlist? createPlaylist(string name, bool? is_public = null, bool? is_collab = null, string? description = null, bool reference_similar = false)
+        public async Task<Playlist?> createPlaylist(string name, bool? is_public = null, bool? is_collab = null, string? description = null, bool reference_similar = false)
         {
 
             if (reference_similar)
@@ -192,7 +192,7 @@ namespace HeavyTracks.Models
 
                 var existing_playlists = getPlaylists();
 
-                foreach (Playlist playlist in existing_playlists)
+                foreach (Playlist playlist in await existing_playlists)
                 {
                     // if all of this is true, a similar playlist has been found.
                     if (name == playlist.name &&
@@ -203,7 +203,7 @@ namespace HeavyTracks.Models
                 }
             }
 
-            var create_req = spotifyApiReq(HttpMethod.Post, $"users/{getUserId()}/playlists");
+            var create_req = await spotifyApiReq(HttpMethod.Post, $"users/{await getUserId()}/playlists");
 
             if (create_req == null)
                 return null;
@@ -226,7 +226,7 @@ namespace HeavyTracks.Models
             if (!response?.IsSuccessStatusCode ?? true)
                 return null;
 
-            var response_content = JObject.Parse(response?.Content.ReadAsStringAsync().Result ?? "{}");
+            var response_content = JObject.Parse((await response?.Content.ReadAsStringAsync()) ?? "{}");
 
             Playlist result = new((bool)is_collab, (bool)is_public, name, description, response_content["id"]?.ToString() ?? "");
 
@@ -246,13 +246,13 @@ namespace HeavyTracks.Models
         /// <param name="tracks"> the weighted tracks to push to the playlist </param>
         /// <param name="playlist"> the playlist that will recieve the weighted tracks </param>
         /// <param name="overwrite"> wether the playlist should be overwritten or not, when pushed to </param>
-        public void pushTracks(List<Track> tracks, Playlist playlist, bool overwrite)
+        public async Task pushTracks(List<Track> tracks, Playlist playlist, bool overwrite)
         {
             if (overwrite)
             {
                 // start by removing all existing tracks (except for local ones) from the playlist.
 
-                List<Track> tracks_to_remove = getPlaylistTracks(playlist).FindAll(track => !track.is_local);
+                List<Track> tracks_to_remove = (await getPlaylistTracks(playlist)).FindAll(track => !track.is_local);
 
                 List<JToken> uris_to_remove = new(tracks_to_remove.Count());
 
@@ -288,7 +288,7 @@ namespace HeavyTracks.Models
         /// 
         /// </summary>
         /// <returns> true if user consented to the session, false if user canceled the authentication </returns>
-        public bool beginSession()
+        public async Task<bool> beginSession()
         {
             // for setup of request, see: https://developer.spotify.com/documentation/general/guides/authorization/code-flow/
             
@@ -358,18 +358,18 @@ namespace HeavyTracks.Models
 
             var access_response = sendHttpRequest(HttpMethod.Post, TOKEN_ENDPOINT,
                 content_type: "application/x-www-form-urlencoded",
-                body: new FormUrlEncodedContent(new Dictionary<string, string>() {
+                body: await new FormUrlEncodedContent(new Dictionary<string, string>() {
                     { "grant_type", "authorization_code" },
                     { "code", code },
                     { "redirect_uri",  $"http://localhost:{PORT}/callback" },
                     { "client_id", m_client_id },
                     { "code_verifier", m_challenge }
-                }).ReadAsStringAsync().Result);
+                }).ReadAsStringAsync());
 
             if (!access_response.IsSuccessStatusCode)
                 throw new SpotifyWeigherException($"Access token get request failed", access_response);
             
-            var access_body_json = JObject.Parse(access_response.Content.ReadAsStringAsync().Result);
+            var access_body_json = JObject.Parse(await access_response.Content.ReadAsStringAsync());
 
             var access_params = getJsonParams(access_body_json, new() { "access_token", "refresh_token", "expires_in"});
 
@@ -424,10 +424,6 @@ namespace HeavyTracks.Models
         private static readonly int MAX_RECV = 50;
         private static readonly int MAX_SEND = 100;
         private static readonly int MAX_OFFSET = 100_000;
-
-        //private static readonly long TOKEN_REFRESH_MARGIN = 10;
-
-        private int max_weight = 5;
 
         /// <summary>
         /// sends a http request to the specified endpoint, with the specified content.
@@ -505,20 +501,20 @@ namespace HeavyTracks.Models
         /// <param name="force_refresh"> if true, forces a token refresh even if the current token has not expired</param>
         /// <returns> spotify api token </returns>
         /// <exception cref="SpotifyWeigherException"> gets thrown if refresh of token fails </exception>
-        private string getToken(bool force_refresh = false)
+        private async Task<string> getToken(bool force_refresh = false)
         {
             if(force_refresh || m_token_expires < DateTime.Now)
             {
-                var resp = sendHttpRequest(HttpMethod.Post, TOKEN_ENDPOINT, body: new FormUrlEncodedContent(new Dictionary<string, string>() {
+                var resp = sendHttpRequest(HttpMethod.Post, TOKEN_ENDPOINT, body: await new FormUrlEncodedContent(new Dictionary<string, string>() {
                     { "grant_type", "refresh_token" },
                     { "refresh_token", m_refresh_token },
                     { "client_id", m_client_id },
-                }).ReadAsStringAsync().Result, content_type: "application/x-www-form-urlencoded");
+                }).ReadAsStringAsync(), content_type: "application/x-www-form-urlencoded");
 
                 if (!resp.IsSuccessStatusCode)
                     throw new SpotifyWeigherException("Refresh request failed", resp);
 
-                var json_resp = JObject.Parse(resp.Content.ReadAsStringAsync().Result);
+                var json_resp = JObject.Parse(await resp.Content.ReadAsStringAsync());
 
                 var json_params = getJsonParams(json_resp, new() { "expires_in", "refresh_token", "token" });
 
@@ -537,11 +533,11 @@ namespace HeavyTracks.Models
         /// <param name="method"> the http request method </param>
         /// <param name="endpoint"> what uri should be suffixed to the api endpoint </param>
         /// <returns> the HttpRequestMethod, null if authorization token is missing </returns>
-        private HttpRequestMessage? spotifyApiReq(HttpMethod method, string endpoint)
+        private async Task<HttpRequestMessage?> spotifyApiReq(HttpMethod method, string endpoint)
         {
             HttpRequestMessage req_msg = new(method, $"{API_ENDPOINT}{endpoint}");
 
-            req_msg.Headers.Add("Authorization", $"Bearer {getToken()}");
+            req_msg.Headers.Add("Authorization", $"Bearer {await getToken()}");
 
             return req_msg;
         }
@@ -556,7 +552,7 @@ namespace HeavyTracks.Models
             if (msg == null)
                 return null;
 
-            var response = m_client.SendAsync(msg).Result;
+            var response = m_client.Send(msg);
 
             if (!response.IsSuccessStatusCode)
                 throw new SpotifyWeigherException("Api request failed", response);
@@ -571,7 +567,7 @@ namespace HeavyTracks.Models
         /// <param name="endpoint"> spotify api endpoint, which returns a variable number of items</param>
         /// <param name="query"> additional query parameters </param>
         /// <returns> list of the varaible json items returned from the spotify api </returns>
-        private List<JObject> getAllItems(HttpMethod method, string endpoint)
+        private async Task<List<JObject>> getAllItems(HttpMethod method, string endpoint)
         {
             /// a spotify query with a list type of result, will only return a maximum of 50 entries per request.
             /// in order to recieve all of the values in for example a playlist,
@@ -596,7 +592,7 @@ namespace HeavyTracks.Models
                 if (!response.IsSuccessStatusCode)
                     throw new SpotifyWeigherException("Failed getting items", response);
 
-                var content = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                var content = JObject.Parse(await response.Content.ReadAsStringAsync());
 
                 var recieved_items = content["items"]?.ToArray();
 

@@ -94,7 +94,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <NumericUpDown
-                                    Maximum="20"
+                                    Maximum="100"
                                     Minimum="1"
                                     Value="{Binding weight}" />
                             </DataTemplate>
