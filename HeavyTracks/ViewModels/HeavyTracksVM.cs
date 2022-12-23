@@ -4,6 +4,7 @@ using HeavyTracks.Models;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 
@@ -13,21 +14,23 @@ namespace HeavyTracks.ViewModels
     {
         public HeavyTracksVM()
         {
-            if (!weigher.loadClientId(creds_file))
+            if (!Design.IsDesignMode)
             {
-                // TODO: should display an error popup requesting a client id? 
-                // this is only hit if something major goes wrong, or if the user manually edited the creds file.
+                if (!weigher.loadClientId(id_file))
+                {
+                    // TODO: should display an error popup requesting a client id? 
+                    // this is only hit if something major goes wrong, or if the user manually edited the creds file.
+                }
+
+                weigher.beginSession();
+
+                Playlists = weigher.getPlaylists();
             }
-
-            weigher.beginSession();
-
-            Playlists = weigher.getPlaylists();
-
         }
 
 
 
-        readonly string creds_file = Design.IsDesignMode ? "design_creds.toml" : "creds.toml";
+        readonly string id_file = "creds.toml";
 
         SpotifyWeigher weigher = new();
         List<Playlist> Playlists { get; set; }
@@ -45,8 +48,18 @@ namespace HeavyTracks.ViewModels
             }
         }
 
-        List<Track> SelectedPlaylistTracks { get; set; }
+        List<Track>? SelectedPlaylistTracks { get; set; }
 
+        public void apply()
+        {
+            weigher.pushTracks(SelectedPlaylistTracks, SelectedPlaylist, true);
+        }
+
+        public void sync()
+        {
+            SelectedPlaylistTracks = weigher.getPlaylistTracks(selected_playlist);
+            this.RaisePropertyChanged(nameof(SelectedPlaylistTracks));
+        }
 
     }
 }
