@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeavyTracks", "HeavyTracks\HeavyTracks.csproj", "{EFAFD0E0-5D09-49CB-A8DD-A6E10AA7F608}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeavyTracks", "HeavyTracks\HeavyTracks.csproj", "{74FE1C80-4CB7-4D8C-AF8F-FB64AD1AA59C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EFAFD0E0-5D09-49CB-A8DD-A6E10AA7F608}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EFAFD0E0-5D09-49CB-A8DD-A6E10AA7F608}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EFAFD0E0-5D09-49CB-A8DD-A6E10AA7F608}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EFAFD0E0-5D09-49CB-A8DD-A6E10AA7F608}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74FE1C80-4CB7-4D8C-AF8F-FB64AD1AA59C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74FE1C80-4CB7-4D8C-AF8F-FB64AD1AA59C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74FE1C80-4CB7-4D8C-AF8F-FB64AD1AA59C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74FE1C80-4CB7-4D8C-AF8F-FB64AD1AA59C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
