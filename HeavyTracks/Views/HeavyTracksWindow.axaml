@@ -37,7 +37,10 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center" />
+                VerticalContentAlignment="Center"
+                Command="{Binding userClicked}"
+                Content="{Binding UserName}"
+                FontSize="20" />
 
             <ListBox
                 Grid.Row="1"

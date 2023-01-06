@@ -71,6 +71,21 @@ namespace HeavyTracks.Models
             return m_user_id;
         }
 
+        public async Task<string?> getUserName()
+        {
+            var request = await spotifyApiReq(HttpMethod.Get, "me");
+
+            if(request != null)
+            {
+                var response = sendApiReq(request);
+
+                if (response?.IsSuccessStatusCode ?? false)
+                    return JObject.Parse(await response.Content.ReadAsStringAsync())["display_name"]!.ToString();
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// retrieves a list of all the playlists that has been created by the active user.
         /// 
@@ -376,6 +391,8 @@ namespace HeavyTracks.Models
             m_token = access_params["access_token"];
             m_refresh_token = access_params["refresh_token"];
             m_token_expires = DateTime.Now.AddSeconds(int.Parse(access_params["expires_in"]));
+
+            m_user_id = "";
 
             return true;
         }

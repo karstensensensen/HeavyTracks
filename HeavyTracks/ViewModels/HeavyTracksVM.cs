@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using HeavyTracks.Models;
+using HeavyTracks.Views;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -26,9 +27,13 @@ namespace HeavyTracks.ViewModels
                 weigher.beginSession().ConfigureAwait(false);
 
                 Playlists = weigher.getPlaylists().Result;
+
+                UserName = weigher.getUserName().Result ?? "";
             }
             else
                 Playlists = new();
+
+            
         }
 
         readonly string id_file = "creds.toml";
@@ -55,7 +60,14 @@ namespace HeavyTracks.ViewModels
             }
         }
 
+        string UserName { get; set; }
+
         List<Track>? SelectedPlaylistTracks { get; set; }
+
+        public async Task userClicked()
+        {
+            await weigher.beginSession();
+        }
 
         public async Task apply()
         {
